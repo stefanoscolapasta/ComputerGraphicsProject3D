@@ -44,8 +44,35 @@
     <ClInclude Include="Strutture.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="Materiali.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="VAO_And_Shader_Init.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="World.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Illuminazione.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="fragmentShader_C.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="fragmentShader_Sfondo_C.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
+    <None Include="vertexShader_C.glsl">
+      <Filter>File di risorse</Filter>
+    </None>
   </ItemGroup>
 </Project>

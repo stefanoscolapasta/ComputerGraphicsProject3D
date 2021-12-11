@@ -269,9 +269,6 @@ void crea_toro(Mesh* mesh, vec4 colore)
 		mesh->indici.push_back(i);
 		mesh->indici.push_back(i + 1);
 	}
-
-
-
 }
 
 void crea_cono(Mesh* mesh, vec4 colore)

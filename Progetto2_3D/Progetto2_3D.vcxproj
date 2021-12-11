@@ -120,7 +120,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,27 +147,36 @@
     <ClCompile Include="ShaderMaker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="geometria.h" />
     <ClInclude Include="GestioneTesto.h" />
+    <ClInclude Include="Illuminazione.h" />
     <ClInclude Include="Lib.h" />
+    <ClInclude Include="Materiali.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="ShaderMaker.h" />
     <ClInclude Include="Strutture.h" />
+    <ClInclude Include="VAO_And_Shader_Init.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="fragmentShader_C.glsl" />
+    <None Include="fragmentShader_Sfondo_C.glsl" />
     <None Include="packages.config" />
+    <None Include="vertexShader_C.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\glm.0.9.9.800\build\native\glm.targets" Condition="Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" />
     <Import Project="..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets" Condition="Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" />
     <Import Project="..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets" Condition="Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" />
-    <Import Project="..\packages\glm.0.9.9.800\build\native\glm.targets" Condition="Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Questo progetto fa riferimento a uno o più pacchetti NuGet che non sono presenti in questo computer. Usare lo strumento di ripristino dei pacchetti NuGet per scaricarli. Per altre informazioni, vedere http://go.microsoft.com/fwlink/?LinkID=322105. Il file mancante è {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glm.0.9.9.800\build\native\glm.targets'))" />
     <Error Condition="!Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets'))" />
     <Error Condition="!Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets'))" />
-    <Error Condition="!Exists('..\packages\glm.0.9.9.800\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glm.0.9.9.800\build\native\glm.targets'))" />
   </Target>
 </Project>
