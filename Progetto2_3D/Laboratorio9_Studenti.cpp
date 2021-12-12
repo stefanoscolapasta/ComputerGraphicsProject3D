@@ -14,8 +14,8 @@
 
 #include FT_FREETYPE_H
 
-int width = 1024;
-int height = 800;
+int width = 1900;
+int height = 1000;
 
 int w_up = width;
 int h_up = height;
@@ -27,6 +27,7 @@ vec3 asse = vec3(0.0, 1.0, 0.0);
  
 int selected_obj = -1;
 Mesh Cubo, Piano, Piramide, Centri, Sfera;
+Mesh cerchio, quadrato;
 
 vector<Material> materials;
 vector<Shader> shaders;
@@ -62,6 +63,26 @@ float lastFrame = 0.0f; // Time of last frame
 
 float angolo = 0.0;
 
+#define EMPTY 0
+#define UP_R 1
+#define UP_L 2
+#define DW_L 3
+#define DW_R 4
+#define STR 5
+
+float roadWidth = 6;
+
+vector<vector<int>> road = {
+	{UP_L, STR, STR, UP_R, EMPTY, UP_L, STR, UP_R, EMPTY, UP_L, STR, UP_R},
+	{STR, EMPTY, EMPTY, DW_L, STR, DW_R, EMPTY, STR, EMPTY, STR, EMPTY, STR},
+	{STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR, EMPTY, STR, EMPTY, STR},
+	{DW_L, STR, STR, UP_R, EMPTY, EMPTY, EMPTY, DW_L, STR, DW_R, EMPTY, STR},
+	{EMPTY, EMPTY, EMPTY, STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR},
+	{UP_L, STR, STR, DW_R, EMPTY, EMPTY, EMPTY, EMPTY, UP_L, STR, STR, DW_R},
+	{STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR, EMPTY, EMPTY, EMPTY},
+	{DW_L, STR, STR, STR, STR, STR, STR, STR, DW_R, EMPTY, EMPTY, EMPTY}
+};
+
 
 void update(int a) {
 	angolo += 0.1;
@@ -92,28 +113,32 @@ void INIT_VAO(void)
 	Mesh mano_d, mano_s, piede_s, gamba_s, gambda_d, piede_d;
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 
+	crea_curva(&cerchio, roadWidth);
+	crea_VAO_Vector(&cerchio);
+	crea_piano(&quadrato);
+	crea_VAO_Vector(&quadrato);
+
 	//SFONDO
-	crea_piano_suddiviso(&Sfondo, vec4(0.2, 0.2, 0.9, 0.5));
+	crea_piano_suddiviso(&Sfondo, vec4(0.9, 0.1, 0.9, 0.5));
 	crea_VAO_Vector(&Sfondo);
 	Sfondo.nome = "Sfondo";
 	Sfondo.Model = mat4(1.0);
-	Sfondo.Model = translate(Sfondo.Model, vec3(0.0, 0.0, -100.0));
-	
-	Sfondo.Model = scale(Sfondo.Model, vec3(1000.0f, 1000.00f, 1.0f));
-	Sfondo.Model = rotate(Sfondo.Model, radians(90.0f), vec3(1.0, 0.0, 0.0));
+	Sfondo.Model = translate(Sfondo.Model, vec3(0.0, 0.0, 0));
+	Sfondo.Model = scale(Sfondo.Model, vec3(1, 1, 1.0f));
+	Sfondo.Model = rotate(Sfondo.Model, radians(90.0f), vec3(1.0, 0.0, 0));
 	vec3 cx = Sfondo.Model * vec4(0.0, 0.0, 0.0, 1.0);
 	centri.push_back(cx);
 	raggi.push_back(0.5);
 	Sfondo.sceltaVS = 0;
 	Sfondo.material = MaterialType::EMERALD;
-	Scena.push_back(Sfondo);
+	//Scena.push_back(Sfondo);
 	 
 	//TERRENO
 	crea_piano_suddiviso(&Piano, vec4(0.9, 0.9, 0.9, 0.5));
 	crea_VAO_Vector(&Piano);
 	Piano.nome = "Piano Terra";
 	Piano.Model = mat4(1.0);
-	Piano.Model = translate(Piano.Model, vec3(0.0, -4.5, 0.0));
+	Piano.Model = translate(Piano.Model, vec3(0.0, -0.01, 0.0));
 	
 	Piano.Model = scale(Piano.Model, vec3(1000.0f, 1.0f, 1000.0f));
 	cx = Piano.Model * vec4(0.0, 0.0, 0.0, 1.0);
@@ -124,18 +149,18 @@ void INIT_VAO(void)
 	Scena.push_back(Piano);
 	
 	//casa
-	crea_casa(&Casa, vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 0.9));
+	/*crea_casa(&Casa, vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 0.9));
 	crea_VAO_Vector(&Casa);
 	Casa.nome = "Casa";
 	Casa.Model = mat4(1.0);
-	Casa.Model = translate(Casa.Model, vec3(0, -2.5, 0.0));
+	Casa.Model = translate(Casa.Model, vec3(0, 2.5, 0.0));
 	Casa.Model = scale(Casa.Model, vec3(2.0f, 2.0, 2.0f));
 	cx = Casa.Model * vec4(-1.5, 3.5, 0.0, 1.0);
 	centri.push_back(vec3(cx));
 	raggi.push_back(0.5);
 	Casa.sceltaVS = 0;
 	Casa.material = MaterialType::EMERALD;
-	Scena.push_back(Casa);
+	Scena.push_back(Casa);*/
 
 	//COSTRUZIONE DEL PERSONAGGI
 	//Testa Clown
@@ -565,6 +590,83 @@ void drawScene(void)
 	    //glDrawElements(GL_POINTS, 1,GL_UNSIGNED_INT, BUFFER_OFFSET(ind*sizeof(GLuint)));
 		glBindVertexArray(0);
 	}
+
+	/*cerchio.Model = mat4(1);
+	cerchio.Model = translate(cerchio.Model, vec3(0, 0, 0));
+	cerchio.Model = rotate(cerchio.Model, radians(-90.f), vec3(1, 0, 0));
+	cerchio.Model = scale(cerchio.Model, vec3(1, 1, 1));
+	glBindVertexArray(cerchio.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
+	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	*/
+	/*cerchio.Model = mat4(1);
+	cerchio.Model = translate(cerchio.Model, vec3(0, 0, 0));
+	cerchio.Model = scale(cerchio.Model, vec3(1, 1, 1));
+	glBindVertexArray(cerchio.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
+	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	cerchio.Model = mat4(1);
+	cerchio.Model = translate(cerchio.Model, vec3(2+roadWidth, 0, 0));
+	cerchio.Model = scale(cerchio.Model, vec3(-1, 1, 1));
+	glBindVertexArray(cerchio.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
+	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+
+	/*quadrato.Model = mat4(1);
+	glBindVertexArray(quadrato.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
+	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+
+	/*quadrato.Model = mat4(1);
+	quadrato.Model = translate(quadrato.Model, vec3(0, 0, -2));
+	glBindVertexArray(quadrato.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
+	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	quadrato.Model = mat4(1);
+	quadrato.Model = translate(quadrato.Model, vec3(2, 0, 0));
+	glBindVertexArray(quadrato.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
+	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+	
+	for (int i = 0; i < road.size(); i++) {
+		for (int j = 0; j < road[i].size(); j++) {
+			mat4 modellation = translate(mat4(1), vec3(j * roadWidth, 0, (i + 1) * roadWidth));
+			if (road[i][j] >= UP_R && road[i][j] <= DW_R) {
+				cerchio.Model = modellation;
+				switch (road[i][j])
+				{
+				case UP_L:
+					cerchio.Model = translate(cerchio.Model, vec3(roadWidth, 0, 0));
+					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, 1));
+					break;
+				case DW_L:
+					cerchio.Model = translate(cerchio.Model, vec3(roadWidth, 0, -roadWidth));
+					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, -1));
+					break;
+				case DW_R:
+					cerchio.Model = translate(cerchio.Model, vec3(0, 0, -roadWidth));
+					cerchio.Model = scale(cerchio.Model, vec3(1, 1, -1));
+					break;
+				default:
+					break;
+				}
+				glBindVertexArray(cerchio.VAO);
+				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
+				//glDrawArrays(GL_TRIANGLE_FAN, 0, cerchio.vertici.size());
+				glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+			} else if (road[i][j] == STR) {
+				quadrato.Model = modellation;
+				quadrato.Model = translate(quadrato.Model, vec3(roadWidth/2, 0, -roadWidth/2));
+				quadrato.Model = scale(quadrato.Model, vec3(roadWidth/2, 1, roadWidth/2));
+				glBindVertexArray(quadrato.VAO);
+				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
+				//glDrawArrays(GL_TRIANGLE_STRIP, 0, quadrato.vertici.size());
+				glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+			}
+		}
+	}
 	glutSwapBuffers();
 }
 
@@ -606,12 +708,13 @@ int main(int argc, char* argv[])
 
 	//Inizializzo finestra per il rendering della scena 3d con tutti i suoi eventi le sue inizializzazioni e le sue impostazioni
 	glutInitWindowSize(width, height);
-	glutInitWindowPosition(100, 100);
+	glutInitWindowPosition(0, 0);
 	idfg = glutCreateWindow("Scena 3D");
 	glutDisplayFunc(drawScene);
 	glutReshapeFunc(resize);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboardPressedEvent);
+	glutSpecialFunc(SpecialInput);
 	glutTimerFunc(10, update, 0);
 	glutMotionFunc(mouseActiveMotion); // Evento tasto premuto
 	

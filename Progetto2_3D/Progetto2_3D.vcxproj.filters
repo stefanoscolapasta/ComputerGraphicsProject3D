@@ -30,6 +30,9 @@
     <ClCompile Include="ShaderMaker.cpp">
       <Filter>File di origine</Filter>
     </ClCompile>
+    <ClCompile Include="road.cpp">
+      <Filter>File di intestazione\Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="geometria.h">

@@ -26,6 +26,20 @@ void moveCameraBack()
 
 }
 
+void walkCameraForward() {
+	//ViewSetup.direction = ViewSetup.target - ViewSetup.position;
+	vec4 dir = ViewSetup.direction;
+	dir.y = 0;
+	ViewSetup.position += dir * cameraSpeed;
+}
+
+void walkCameraBack() {
+	//ViewSetup.direction = ViewSetup.target - ViewSetup.position;
+	vec4 dir = ViewSetup.direction;
+	dir.y = 0;
+	ViewSetup.position -= dir * cameraSpeed;
+}
+
 void moveCameraLeft()
 {
 	//Calcolo la direzione perpendicolare alla direzione della camera e l'alto della camera
@@ -46,6 +60,25 @@ void moveCameraRight()
 	ViewSetup.target += vec4(direzione_scorrimento, 0);
 }
 
+void SpecialInput(int key, int x, int y)
+{
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		walkCameraForward();
+		break;
+	case GLUT_KEY_DOWN:
+		walkCameraBack();
+		break;
+	case GLUT_KEY_LEFT:
+		//do something here
+		break;
+	case GLUT_KEY_RIGHT:
+		//do something here
+		break;
+	}
+	glutPostRedisplay();
+}
 
 void moveCamera(unsigned char key) {
 	switch (key) {
