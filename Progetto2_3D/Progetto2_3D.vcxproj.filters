@@ -35,9 +35,6 @@
     <ClInclude Include="geometria.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="GestioneTesto.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
     <ClInclude Include="Lib.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
@@ -63,6 +60,18 @@
       <Filter>File di intestazione</Filter>
     </ClInclude>
     <ClInclude Include="Menu.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="cespuglio.h">
+      <Filter>File di intestazione\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformMesh.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawMesh.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
   </ItemGroup>

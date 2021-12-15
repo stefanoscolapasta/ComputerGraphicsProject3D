@@ -1,15 +1,12 @@
 #pragma once
+
 #include "Lib.h"
- 
 #include <string>
-typedef enum {  
-GOURAUD,
-PHONG,
-BLINN,
-TOON,
-PASS_THROUGH,
-WAVE
-} ShadingType;
+
+#ifndef STRUTTURE_H
+#define STRUTTURE_H
+
+
 
 //Strutture luci e materiali
 
@@ -61,6 +58,14 @@ typedef struct {
 	GLuint material_shininess;
 } LightShaderUniform;
 
+typedef enum {
+	GOURAUD,
+	PHONG,
+	BLINN,
+	TOON,
+	PASS_THROUGH,
+	WAVE
+} ShadingType;
 
 
 typedef struct {
@@ -81,6 +86,12 @@ typedef struct {
 	GLuint EBO_indici;
 	GLuint VBO_coord_texture;
 	string nome;
+
+	float dx, dy, dz;
+	float scalex, scaley, scalez;
+	float angle;
+	float rx, ry, rz;
+
 } Mesh;
 
 static vector<Mesh> Scena;
@@ -106,4 +117,5 @@ struct Character {
 	unsigned int Advance;   // Horizontal offset to advance to next glyph
 };
 
+#endif // !STRUTTURE_H
 

@@ -148,14 +148,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="cespuglio.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="DrawMesh.h" />
     <ClInclude Include="geometria.h" />
-    <ClInclude Include="GestioneTesto.h" />
     <ClInclude Include="Illuminazione.h" />
     <ClInclude Include="Lib.h" />
     <ClInclude Include="Materiali.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="ShaderMaker.h" />
     <ClInclude Include="Strutture.h" />
+    <ClInclude Include="TransformMesh.h" />
     <ClInclude Include="VAO_And_Shader_Init.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
