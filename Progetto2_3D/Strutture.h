@@ -55,6 +55,23 @@ typedef struct {
 	GLuint material_shininess;
 } LightShaderUniform;
 
+// ***********************
+
+typedef struct {
+	GLuint position;
+	GLuint color;
+	GLuint power;
+} LightUniform;
+
+typedef struct {
+	GLuint diffuse;
+	GLuint ambient;
+	GLuint specular;
+	GLuint shininess;
+} MaterialUniform;
+
+//************
+
 typedef enum {
 	GOURAUD,
 	PHONG,

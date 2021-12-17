@@ -10,10 +10,11 @@ using namespace glm;
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-void define_light_position_and_intensity(LightShaderUniform* light_unif, point_light* light, float angle) {
-	glUniform3f(light_unif->light_position_pointer, light->position.x + 10 * cos(radians(angle)), light->position.y, light->position.z + 10 * sin(radians(angle)));
-	glUniform3f(light_unif->light_color_pointer, light->color.r, light->color.g, light->color.b);
-	glUniform1f(light_unif->light_power_pointer, light->power);
+void define_light_position_and_intensity(LightUniform* light_unif, point_light* light, float angle) {
+	//glUniform3f(light_unif->light_position_pointer, light->position.x + 10 * cos(radians(angle)), light->position.y, light->position.z + 10 * sin(radians(angle)));
+	glUniform3f(light_unif->position, light->position.x, light->position.y, light->position.z);
+	glUniform3f(light_unif->color, light->color.r, light->color.g, light->color.b);
+	glUniform1f(light_unif->power, light->power);
 }
 
 

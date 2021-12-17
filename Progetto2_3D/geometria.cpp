@@ -6,22 +6,37 @@
 void crea_cubo(Mesh* mesh, vec4 coloret, vec4 coloreb)
 {
 	mesh->vertici.push_back(vec3(-1.0, -1.0, 1.0));
+	mesh->normali.push_back(vec3(-1.0, -1.0, 1.0));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(1.0, -1.0, 1.0));
+	mesh->normali.push_back(vec3(1.0, -1.0, 1.0));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(1.0, 1.0, 1.0));
+	mesh->normali.push_back(vec3(1.0, 1.0, 1.0));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(-1.0, 1.0, 1.0));
+	mesh->normali.push_back(vec3(-1.0, 1.0, 1.0));
 	mesh->colori.push_back(coloret);
 	// back
 	mesh->vertici.push_back(vec3(-1.0, -1.0, -1.0));
+	mesh->normali.push_back(vec3(-1.0, -1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(1.0, -1.0, -1.0));
+	mesh->normali.push_back(vec3(1.0, -1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(1.0, 1.0, -1.0));
+	mesh->normali.push_back(vec3(1.0, 1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(-1.0, 1.0, -1.0));
+	mesh->normali.push_back(vec3(-1.0, 1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 
 	mesh->vertici.push_back(vec3(1.0, 1.0, 1.0));
 	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
@@ -45,24 +60,39 @@ void crea_cubo(Mesh* mesh, vec4 coloret, vec4 coloreb)
 
 void crea_tetto_macchina(Mesh* mesh, vec4 coloret, vec4 coloreb) {
 	mesh->vertici.push_back(vec3(-1.0, -1.0, 1.0));
+	mesh->normali.push_back(vec3(-1.0, -1.0, 1.0));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(1.0, -1.0, 1.0));
+	mesh->normali.push_back(vec3(1.0, -1.0, 1.0));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(0.8, 1.0, 0.9));
+	mesh->normali.push_back(vec3(0.8, 1.0, 0.9));
 	mesh->colori.push_back(coloret);
+
 	mesh->vertici.push_back(vec3(-0.8, 1.0, 0.9));
+	mesh->normali.push_back(vec3(-0.8, 1.0, 0.9));
 	mesh->colori.push_back(coloret);
 	// back
 	mesh->vertici.push_back(vec3(-1.0, -1.0, -1.0));
+	mesh->normali.push_back(vec3(-1.0, -1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(1.0, -1.0, -1.0));
+	mesh->normali.push_back(vec3(1.0, -1.0, -1.0));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(0.8, 1.0, -0.7));
+	mesh->normali.push_back(vec3(0.8, 1.0, -0.7));
 	mesh->colori.push_back(coloreb);
+
 	mesh->vertici.push_back(vec3(-0.8, 1.0, -0.7));
+	mesh->normali.push_back(vec3(-0.8, 1.0, -0.7));
 	mesh->colori.push_back(coloreb);
 
 	mesh->vertici.push_back(vec3(1.0, 1.0, 1.0));
+	mesh->normali.push_back(vec3(1.0, 1.0, 1.0));
 	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
 
 	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(2);
@@ -114,15 +144,23 @@ void crea_piramide(Mesh* mesh)
 void crea_cofano(Mesh* mesh)
 {
 	mesh->vertici.push_back(vec3(-1.0, 0.0, 1.0));
+	mesh->normali.push_back(vec3(-1.0, 0.0, 1.0));
 	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+
 	mesh->vertici.push_back(vec3(1.0, 0.0, 1.0));
+	mesh->normali.push_back(vec3(1.0, 0.0, 1.0));
 	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+
 	mesh->vertici.push_back(vec3(1.0, 0.0, -1.0));
+	mesh->normali.push_back(vec3(1.0, 0.0, -1.0));
 	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+
 	mesh->vertici.push_back(vec3(-1.0, 0.0, -1.0));
+	mesh->normali.push_back(vec3(-1.0, 0.0, -1.0));
 	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
 	// Apice piramide
 	mesh->vertici.push_back(vec3(0.0, 1.0, 1.7));
+	mesh->normali.push_back(vec3(0.0, 1.0, 1.7));
 	mesh->colori.push_back(vec4(1.0, 1.0, 1.0, 1.0));
 
 	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(2);
@@ -135,6 +173,7 @@ void crea_cofano(Mesh* mesh)
 	mesh->indici.push_back(1); mesh->indici.push_back(2); mesh->indici.push_back(4);
 
 	mesh->vertici.push_back(vec3(0.0, 0.0, 0.0));
+	mesh->normali.push_back(vec3(0.0, 0.0, 0.0));
 	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
 
 	int nv = mesh->vertici.size();
@@ -166,6 +205,7 @@ void crea_curva(Mesh* mesh, int raggio)
 	float step = (2 * PI) / 40;
 	mesh->vertici.push_back(vec3(0.0, 0.0, 0.0));
 	mesh->colori.push_back(vec4(0.3, 0.3, 0.3, 1));
+	mesh->normali.push_back(vec3(0, 1, 0));
 	for (int i = 0; i <= 40 / 4; i++)
 	{
 		float t = (float)i * step;
@@ -173,6 +213,7 @@ void crea_curva(Mesh* mesh, int raggio)
 		double y = raggio * sin(t);
 		mesh->vertici.push_back(vec3(x, 0, -y));
 		mesh->colori.push_back(vec4(0.3, 0.3, 0.3, 1));
+		mesh->normali.push_back(vec3(0, 1, 0));
 	}
 
 	for (int i = 1; i < mesh->vertici.size() - 1; i++) {

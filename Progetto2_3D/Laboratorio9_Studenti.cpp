@@ -44,6 +44,7 @@ vec3 asse = vec3(0.0, 1.0, 0.0);
 int selected_obj = -1;
 
 Mesh Cubo, Tetto, Cofano, Ruota, Piano, Piramide, Centri, Sfera, Sole, Sfondo;
+Mesh Palo, Lampione;
 Mesh cerchio, quadrato;
 
 vector<Material> materials;
@@ -75,7 +76,7 @@ Car car = { vec3(road.width / 2, 0, road.width) + road.position, D_UP, ((2 * (fl
 
 vector<vec3> createCircularPathAtPos(float posZ) {
 	int radious = 10.0f;
-	int nTriangles = 100;
+	int nTriangles = 1000;
 	float step = (2 * PI) / ((float)nTriangles);
 
 	vector<vec3> positions;
@@ -148,6 +149,12 @@ vec3 calculateDirectionVecFromInt(int dir) {
 
 
 void update(int a) {
+
+	/* Positione del sole */
+	world.light.position = calculateObjectVerticesBarycenter(&Sole);
+	world.lights[0].position = calculateObjectVerticesBarycenter(&Sole);
+	world.lights[1].position = calculateObjectVerticesBarycenter(&Lampione);
+
 	/* Movement */
 	int slot = roadMatrix[row][column];
 	if ((slot == UP_L && car.direction == D_UP) || (slot == UP_R && car.direction == D_RIGHT)
@@ -288,6 +295,11 @@ void INIT_VAO(void)
 	crea_VAO_Vector(&Cofano);
 	crea_cilindro(&Ruota, vec4(0, 0, 0, 1));
 	crea_VAO_Vector(&Ruota);
+	/*LAMPIONe*/
+	crea_cilindro(&Palo, vec4(0,0,0,1));
+	crea_VAO_Vector(&Palo);
+	crea_sfera(&Lampione, vec4(1,1,1,1));
+	crea_VAO_Vector(&Lampione);
 
 	//SOLE
 	crea_sfera(&Sole, vec4(1.0, 1.0, 0.0, 1.0));
@@ -295,7 +307,7 @@ void INIT_VAO(void)
 	Sole.nome = "Sole";
 	Sole.Model = mat4(1.0);
 	Sole.Model = translate(Sole.Model, vec3(0, 2.5, 0));
-	Sole.initialScaleMultiplier = 4.0f;
+	Sole.initialScaleMultiplier = 40.0f;
 	Sole.Model = scale(Sole.Model, vec3(Sole.initialScaleMultiplier, Sole.initialScaleMultiplier, Sole.initialScaleMultiplier));
 	//cx = Sole.Model * vec4(-1.5, 3.5, 0.0, 1.0);
 	//centri.push_back(vec3(cx));
@@ -549,6 +561,13 @@ void resize(int w, int h)
 	world.h_up = h;
 }
 
+void setMaterialUniform(MaterialType material) {
+	glUniform3fv(world.material_unif.ambient, 1, glm::value_ptr(materials[material].ambient));
+	glUniform3fv(world.material_unif.diffuse, 1, glm::value_ptr(materials[material].diffuse));
+	glUniform3fv(world.material_unif.specular, 1, glm::value_ptr(materials[material].specular));
+	glUniform1f(world.material_unif.shininess, materials[material].shininess);
+}
+
 void drawScene(void)
 {
 
@@ -576,7 +595,9 @@ void drawScene(void)
 	glUniformMatrix4fv(MatView, 1, GL_FALSE, value_ptr(View));
 
 	//Definizione colore luce, posizione ed intensit�
-	define_light_position_and_intensity(&world.light_unif, &world.light, angolo);
+	for (int i = 0; i < LIGHTS_NUM; i++) {
+		define_light_position_and_intensity(&world.lights_unif[i], &world.lights[i], angolo);
+	}
 
 	//Passo la posizione della camera
 	glUniform3f(loc_view_pos, ViewSetup.position.x, ViewSetup.position.y, ViewSetup.position.z);
@@ -589,19 +610,16 @@ void drawScene(void)
 
 	for (int k =0; k < Scena.size(); k++) {
 		glUniformMatrix4fv(MatModel, 1, GL_FALSE, glm::value_ptr(Scena[k]->Model));
-		glUniform3fv(world.light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k]->material].ambient));
-		glUniform3fv(world.light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k]->material].diffuse));
-		glUniform3fv(world.light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k]->material].specular));
-		glUniform1f(world.light_unif.material_shininess, materials[Scena[k]->material].shininess);
-
+		setMaterialUniform(Scena[k]->material);
 		draw_mesh(&(*Scena[k]), GL_TRIANGLES, MatModel);
 	}
-
+	glUniform1i(lscelta, 1);
 	Cubo.Model = mat4(1);
 	Cubo.Model = translate(Cubo.Model, car.position);
 	Cubo.Model = rotate(Cubo.Model, -car.rotation, vec3(0, 1, 0));
 	Cubo.Model = translate(Cubo.Model, vec3(0, 1.1, 0));
 	Cubo.Model = scale(Cubo.Model, vec3(2, 0.1, 4));
+	setMaterialUniform(MaterialType::RED_PLASTIC);
 	glBindVertexArray(Cubo.VAO);
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cubo.Model));
 	glDrawElements(GL_TRIANGLES, (Cubo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
@@ -611,9 +629,9 @@ void drawScene(void)
 	Tetto.Model = rotate(Tetto.Model, -car.rotation, vec3(0, 1, 0));
 	Tetto.Model = translate(Tetto.Model, vec3(0, 1.9, 1));
 	Tetto.Model = scale(Tetto.Model, vec3(2, 0.8, 3));
-
+	glBindVertexArray(Tetto.VAO);
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Tetto.Model));
-	draw_mesh_kel(&Tetto, GL_TRIANGLES, MatModel);
+	glDrawElements(GL_TRIANGLES, (Tetto.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
 
 	Cofano.Model = mat4(1);
@@ -631,6 +649,7 @@ void drawScene(void)
 	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, -3));
 	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
 	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	setMaterialUniform(MaterialType::SLATE);
 	glBindVertexArray(Ruota.VAO);
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
 	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
@@ -665,6 +684,7 @@ void drawScene(void)
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
 	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 	
+	setMaterialUniform(MaterialType::SLATE);
 	for (int i = 0; i < roadMatrix.size(); i++) {
 		for (int j = 0; j < roadMatrix[i].size(); j++) {
 			mat4 modellation = translate(mat4(1), road.position + vec3(j * road.width, 0, (i + 1) * road.width));
@@ -700,6 +720,22 @@ void drawScene(void)
 			}
 		}
 	}
+	/* Lampione */
+	glUniform1i(lscelta, 0);
+	Palo.Model = mat4(1);
+	Palo.Model = translate(Palo.Model, vec3(0, 0, 0));
+	Palo.Model = scale(Palo.Model, vec3(0.2, 7, 0.2));
+	glBindVertexArray(Palo.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Palo.Model));
+	glDrawElements(GL_TRIANGLES, (Palo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Lampione.Model = mat4(1);
+	Lampione.Model = translate(Lampione.Model, vec3(0, 7.5, 0));
+	Lampione.Model = scale(Lampione.Model, vec3(1, 1, 1));
+	glBindVertexArray(Lampione.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Lampione.Model));
+	glDrawElements(GL_TRIANGLES, (Lampione.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
 	glutSwapBuffers();
 }
 
@@ -756,7 +792,7 @@ int main(int argc, char* argv[])
 
 	INIT_SHADER();
 	INIT_VAO();
-	INIT_Illuminazione(&world.light, materials, shaders);
+	INIT_Illuminazione(world.lights, materials, shaders);
 
 	buildOpenGLMenu();
 	INIT_CAMERA_PROJECTION(world.width, world.height);
@@ -779,12 +815,30 @@ int main(int argc, char* argv[])
 	 
 	lscelta = glGetUniformLocation(programId, "sceltaVs");
 	 
-	world.light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
+	/*world.light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
 	world.light_unif.light_color_pointer = glGetUniformLocation(programId, "light.color");
 	world.light_unif.light_power_pointer = glGetUniformLocation(programId, "light.power");
 	world.light_unif.material_ambient = glGetUniformLocation(programId, "material.ambient");
 	world.light_unif.material_diffuse = glGetUniformLocation(programId, "material.diffuse");
 	world.light_unif.material_specular = glGetUniformLocation(programId, "material.specular");
-	world.light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");
+	world.light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");*/
+
+
+
+	/* location delle lights */
+	for (int i = 0; i < LIGHTS_NUM; i++) {
+		string positionStr = "lights[" + to_string(i) + "].position";
+		world.lights_unif[i].position = glGetUniformLocation(programId, positionStr.c_str());
+		string colorStr = "lights[" + to_string(i) + "].color";
+		world.lights_unif[i].color = glGetUniformLocation(programId, colorStr.c_str());
+		string lightStr = "lights[" + to_string(i) + "].power";
+		world.lights_unif[i].power = glGetUniformLocation(programId, lightStr.c_str());
+		cout << positionStr << endl;
+	}
+	world.material_unif.ambient = glGetUniformLocation(programId, "material.ambient");
+	world.material_unif.diffuse = glGetUniformLocation(programId, "material.diffuse");
+	world.material_unif.specular = glGetUniformLocation(programId, "material.specular");
+	world.material_unif.shininess = glGetUniformLocation(programId, "material.shininess");
+
 	glutMainLoop();
 }
