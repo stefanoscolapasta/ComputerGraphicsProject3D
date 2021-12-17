@@ -37,8 +37,11 @@ out vec4 ourColor; // output a color to the fragment shader
 
 void main()
 {
-    if (sceltaVs==0)
-           gl_Position = Projection*View*Model*vec4(aPos, 1.0);
+    if (sceltaVs == 0) {
+        gl_Position = Projection * View * Model * vec4(aPos, 1.0);
+        ourColor = aColor;
+    }
+           
     
      
      if (sceltaVs==4)

@@ -4,13 +4,10 @@
 #include "Strutture.h"
 
 
-
 #ifndef CAMERA_H
 #define CAMERA_H
 
 float cameraSpeed = 0.05;
-
-
 
 void moveCameraForward()
 {
@@ -60,7 +57,7 @@ void moveCamera(unsigned char key) {
 void INIT_CAMERA_PROJECTION(float width, float height) {
 	//Imposto la telecamera
 	ViewSetup = {};
-	ViewSetup.position = glm::vec4(0.0, 0.5, 25.0, 0.0);
+	ViewSetup.position = glm::vec4(0.0, 0.5, 80.0, 0.0);
 	ViewSetup.target = glm::vec4(0.0, 0.0, 0.0, 0.0);
 	ViewSetup.direction = ViewSetup.target - ViewSetup.position;
 	ViewSetup.upVector = glm::vec4(0.0, 1.0, 0.0, 0.0);
@@ -68,7 +65,7 @@ void INIT_CAMERA_PROJECTION(float width, float height) {
 	//Imposto la proiezione prospettica
 	PerspectiveSetup = {};
 	PerspectiveSetup.aspect = (GLfloat)width / (GLfloat)height;
-	PerspectiveSetup.fovY = 45.0f;
+	PerspectiveSetup.fovY = 60.0f;
 	PerspectiveSetup.far_plane = 2000.0f;
 	PerspectiveSetup.near_plane = 0.1f;
 }

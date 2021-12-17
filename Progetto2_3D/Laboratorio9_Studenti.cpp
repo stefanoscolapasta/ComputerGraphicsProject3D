@@ -14,6 +14,8 @@
 
 #include FT_FREETYPE_H
 
+void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor);
+
 int width = 1024;
 int height = 800;
 
@@ -26,7 +28,7 @@ int idfg;
 vec3 asse = vec3(0.0, 1.0, 0.0);
  
 int selected_obj = -1;
-Mesh Cubo, Piano, Piramide, Centri, Sfera;
+Mesh Cubo, Piramide, Centri, Sfera;
 
 vector<Material> materials;
 vector<Shader> shaders;
@@ -60,16 +62,99 @@ enum {
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
+Mesh Sfondo, Piano, Casa, Sole;
+
+typedef struct {
+	float deltaXOffset;
+	float offsetXMassimo;
+	vec3 startingCameraPos;
+}CameraMovementHandler;
+
+CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position };
+
 float angolo = 0.0;
 
+vec3 calculateObjectVerticesBarycenter(Mesh* obj) {
+	float sumX = 0.0f;
+	float sumY = 0.0f;
+	float sumZ = 0.0f;
+
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		sumX += obj->vertici[i].x;
+		sumY += obj->vertici[i].y;
+		sumZ += obj->vertici[i].z;
+	}
+
+	int numberOfVertices = obj->vertici.size();
+
+	return vec3(sumX/((float)numberOfVertices), sumY / ((float)numberOfVertices), sumZ / ((float)numberOfVertices));
+
+}
+
+bool checkIfCameraReachedFixedBoundary() {
+	return ViewSetup.position.x > cameraMovementHandler.startingCameraPos.x + cameraMovementHandler.offsetXMassimo ||
+		ViewSetup.position.x < cameraMovementHandler.startingCameraPos.x - cameraMovementHandler.offsetXMassimo;
+}
+
+void cameraMovementUpdateHandler(Mesh* target){
+	if (checkIfCameraReachedFixedBoundary()) {
+		cameraMovementHandler.deltaXOffset = -cameraMovementHandler.deltaXOffset;
+	}
+	ViewSetup.position.x += cameraMovementHandler.deltaXOffset;
+}
+
+void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
+{
+	//ricordare che mat4(1) costruisce una matrice identità di ordine 4
+	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
+	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(scale_factor, scale_factor, scale_factor));
+	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
+
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		obj->vertici[i] += translation_vector * obj->initialScaleMultiplier;
+		//funziona solo se l'oggetto seguito ha una scale = 1;
+		//Per farlo funzionare devo moltiplicare il vettore applicato alla matrice model per il moltiplicatore della scale iniziale
+	}
+
+	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
+	
+	obj->Model = obj->Model * scale * rotation * traslation;
+
+}
+
+void modifyModelMatrixToPos(Mesh* obj, glm::vec3 positional_vector)
+{
+	//ricordare che mat4(1) costruisce una matrice identità di ordine 4
+	obj->Model = mat4(1);
+	mat4 traslation = glm::translate(glm::mat4(1), positional_vector);
+
+	obj->Model = obj->Model * traslation;
+}
+
+void makeCameraTrackObject(Mesh* objToFollow) {
+	ViewSetup.target = vec4(calculateObjectVerticesBarycenter(objToFollow), 0.0f);
+}
+
+void makeCameraFollowObject(Mesh* objToFollow, vec3 offsetToPos) {
+	ViewSetup.position = vec4(calculateObjectVerticesBarycenter(objToFollow) + offsetToPos, 0.0f);
+}
 
 void update(int a) {
 	angolo += 0.1;
+
+	vec3 movementVector = vec3(.05f, .05f, 0.0f);
+
+	modifyModelMatrix(&Sole, movementVector, vec3(1.0f, 0, 0), 0.0f, 1.0f);
+	makeCameraTrackObject(&Sole);
+	//makeCameraFollowObject(&Sole, vec3(0.0f,0.0f,10.0f));
+
+	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
 	glutTimerFunc(10, update, 0);
 
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
+
 
 glm::vec3 getTrackBallPoint(float x, float y) {
 	//La trackball virtuale pu� fornire un'interfaccia utente intuitiva 
@@ -85,11 +170,9 @@ glm::vec3 getTrackBallPoint(float x, float y) {
 	point.z = (zTemp > 0.0f) ? sqrt(zTemp) : 0.0;
 	return point;
 }
+
 void INIT_VAO(void)
 {
-
-	Mesh Sfondo, cappello, pon, testa, naso, corpo, braccio_s, braccio_d, occhio_s, occhio_d, Casa, Palo, Telo, bottone, collo, bocca;
-	Mesh mano_d, mano_s, piede_s, gamba_s, gambda_d, piede_d;
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 
 	//SFONDO
@@ -106,7 +189,7 @@ void INIT_VAO(void)
 	raggi.push_back(0.5);
 	Sfondo.sceltaVS = 0;
 	Sfondo.material = MaterialType::EMERALD;
-	Scena.push_back(Sfondo);
+	Scena.push_back(&Sfondo);
 	 
 	//TERRENO
 	crea_piano_suddiviso(&Piano, vec4(0.9, 0.9, 0.9, 0.5));
@@ -121,9 +204,9 @@ void INIT_VAO(void)
 	raggi.push_back(0.5);
 	Piano.sceltaVS = 0;
 	Piano.material = MaterialType::EMERALD;
-	Scena.push_back(Piano);
+	Scena.push_back(&Piano);
 	
-	//casa
+	//CASA
 	crea_casa(&Casa, vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 0.9));
 	crea_VAO_Vector(&Casa);
 	Casa.nome = "Casa";
@@ -135,172 +218,26 @@ void INIT_VAO(void)
 	raggi.push_back(0.5);
 	Casa.sceltaVS = 0;
 	Casa.material = MaterialType::EMERALD;
-	Scena.push_back(Casa);
+	Scena.push_back(&Casa);
 
-	//COSTRUZIONE DEL PERSONAGGI
-	//Testa Clown
-	/*crea_sfera(&testa,vec4(1.0,1.0,0.6,1.0));
-	crea_VAO_Vector(&testa);
-	testa.Model = mat4(1.0);
-	testa.Model = translate(testa.Model, vec3(0.0, 2.75, 0.0));
-	testa.Model = scale(testa.Model, vec3(0.75, 0.75, 0.75));
-	testa.nome = "Testa";
-	cx = testa.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
+	//SOLE
+	crea_sfera(&Sole, vec4(1.0, 1.0, 0.0, 1.0));
+	crea_VAO_Vector(&Sole);
+	Sole.nome = "Sole";
+	Sole.Model = mat4(1.0);
+	Sole.Model = translate(Sole.Model, vec3(0, 2.5, 0));
+	Sole.initialScaleMultiplier = 4.0f;
+	Sole.Model = scale(Sole.Model, vec3(Sole.initialScaleMultiplier, Sole.initialScaleMultiplier, Sole.initialScaleMultiplier));
+	cx = Sole.Model * vec4(-1.5, 3.5, 0.0, 1.0);
+	centri.push_back(vec3(cx));
 	raggi.push_back(0.5);
-	testa.sceltaVS = 0;
-	testa.material = MaterialType::RED_PLASTIC;
-	Scena.push_back(testa);
-	 
-	//OCCHIO SINISTRO
-	crea_sfera(&occhio_s, vec4(1.0, 1.0, 1.0, 1.0));
-	crea_VAO_Vector(&occhio_s);
-	occhio_s.Model = mat4(1.0);
-	occhio_s.Model = translate(occhio_s.Model, vec3(-0.4, 2.75, 0.8));
-	occhio_s.Model = scale(occhio_s.Model, vec3(0.25, 0.2, 0.15));
-	occhio_s.nome = "occhio sinistro";
-	cx = occhio_s.Model * vec4(0.0,0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	occhio_s.sceltaVS = 0;
-	raggi.push_back(0.5);
-	occhio_s.material = MaterialType::SLATE;
-	Scena.push_back(occhio_s);
-	  
+	Sole.sceltaVS = 0;
+	Sole.material = MaterialType::RED_PLASTIC;
+	Scena.push_back(&Sole);
 
-	//OCCHIO DESTRO
-	crea_sfera(&occhio_d, vec4(1.0, 1.0, 1.0, 1.0));
-	crea_VAO_Vector(&occhio_d);
-	occhio_d.Model = mat4(1.0);
-	occhio_d.Model = translate(occhio_d.Model, vec3(0.4, 2.75, 0.8));
-	occhio_d.Model = scale(occhio_d.Model, vec3(0.25, 0.2, 0.15));
-	occhio_d.nome = "Occhio destro";
-	cx = occhio_d.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_d.sceltaVS = 0;
-	occhio_d.material = MaterialType::SLATE;
-	Scena.push_back(occhio_d);
-
-	 
-	occhio_s.colori.clear();
-	occhio_s.vertici.clear();
-	occhio_s.indici.clear();
-
-	occhio_d.colori.clear();
-	occhio_d.vertici.clear();
-	occhio_d.indici.clear();
-
-	//Pupille
-	//OCCHIO SINISTRO
-	crea_sfera(&occhio_s, vec4(0.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&occhio_s);
-	occhio_s.Model = mat4(1.0);
-	occhio_s.Model = translate(occhio_s.Model, vec3(-0.4, 2.75, 0.9));
-	occhio_s.Model = scale(occhio_s.Model, vec3(0.1, 0.15, 0.05));
-	occhio_s.nome = "pupilla sinistra";
-	cx = occhio_s.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_s.sceltaVS = 0;
-	occhio_s.material = MaterialType::SLATE;
-	Scena.push_back(occhio_s);
-
-	//Pupille
-	//OCCHIO DESTRO
-	crea_sfera(&occhio_d, vec4(0.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&occhio_d);
-	occhio_d.Model = mat4(1.0);
-	occhio_d.Model = translate(occhio_d.Model, vec3(0.4, 2.75, 0.9));
-	occhio_d.Model = scale(occhio_d.Model, vec3(0.1, 0.15, 0.05));
-	occhio_d.nome = "Pupilla destra";
-	cx = occhio_d.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_d.sceltaVS = 0;
-	occhio_d.material = MaterialType::SLATE;
-	Scena.push_back(occhio_d);
-
-
-
-	//NASO
-	crea_sfera(&naso, vec4(1.0, 0.0, 1.0, 1.0));
-	crea_VAO_Vector(&naso);
-	naso.Model = mat4(1.0);
-	naso.Model = translate(naso.Model, vec3(0.0, 2.6, 0.4));
-	naso.Model = scale(naso.Model, vec3(0.2, 0.2, 0.6));
-	cx = naso.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	naso.nome = "naso";
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	naso.sceltaVS = 0;
-	naso.material = MaterialType::SLATE;
-	Scena.push_back(naso);
-
-
-	//Bocca
-	crea_sfera(&bocca, vec4(1.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&bocca);
-	bocca.Model = mat4(1.0);
-	bocca.Model = translate(bocca.Model, vec3(0.0, 2.2, 0.4));
-	bocca.Model = scale(bocca.Model, vec3(0.4, 0.1, 0.2));
-	bocca.nome = "bocca";
-	cx = bocca.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	bocca.sceltaVS = 0;
-	bocca.material = MaterialType::SLATE;
-	Scena.push_back(bocca);
-	
-	//Palo
-	crea_cilindro(&Palo, vec4(1.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&Palo);
-	Palo.Model = mat4(1.0);
-	Palo.Model = translate(Palo.Model, vec3(28.0, -2.5, 0.0));
-	Palo.Model = scale(Palo.Model, vec3(0.1f, 10.0f, 0.1f));
-	Palo.nome = "Palo";
-	
-	cx = Palo.Model * vec4(0.0, 1.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	Palo.sceltaVS = 0;
-	Palo.material = MaterialType::SLATE;
-	Scena.push_back(Palo);
- 
-	//Telo
-	crea_piano_suddiviso(&Telo, vec4(0.8, 0.2, 0.9, 1.0));
-	crea_VAO_Vector(&Telo);
-	Telo.nome = "Telo";
-	Telo.Model = mat4(1.0);
-	Telo.Model = translate(Telo.Model, vec3(30.0, 6.0, 0.0));
-	Telo.Model = scale(Telo.Model, vec3(4.0f, 3.0f, 1.0f));
-	Telo.Model = rotate(Telo.Model, radians(90.0f), vec3(1.0, 0.0, 0.0));
-	cx = Telo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	 
-	centri.push_back(cx);
-	raggi.push_back(1.5);
-	Telo.sceltaVS = 0;
-	Telo.material = MaterialType::SLATE;
-	Scena.push_back(Telo);
-	*/
 }
 
-void modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
-{
-	//ricordare che mat4(1) costruisce una matrice identit� di ordine 4
-	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
-	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(scale_factor, scale_factor, scale_factor));
-	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
 
-	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
-
-	if (selected_obj > -1)
-	{
-		Scena[selected_obj].Model = Scena[selected_obj].Model * scale * rotation * traslation;
-		centri[selected_obj] = centri[selected_obj] + translation_vector;
-		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
-	}
-
-}
 void keyboardPressedEvent(unsigned char key, int x, int y) {
 
 	moveCamera(key);
@@ -358,15 +295,15 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 		// definisce la matrice di modellazione che si vuole postmoltiplicare alla matrice di modellazione dell'oggetto selezionato, per poterlo traslare, ruotare scalare.
 	case TRASLATING:
 		// si passa angle 0 e scale factor =1, 
-		modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
+		//modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
 		break;
 	case ROTATING:
 		// SI mette a zero il vettore di traslazione (vec3(0) e ad 1 il fattore di scale
-		modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
+		//modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
 		break;
 	case SCALING:
 		// SI mette a zero il vettore di traslazione (vec3(0), angolo di rotazione a 0 e ad 1 il fattore di scala 1+amount.
-		modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
+		//modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
 		break;
 	}
 	glutSetWindow(idfg);
@@ -378,7 +315,7 @@ vec3 get_ray_from_mouse(float mouse_x, float mouse_y) {
 	float x = (2.0f * mouse_x) / width - 1.0;
 	float y = 1.0f - (2.0f * mouse_y) / height;
 	float z = 1.0f;
-	vec3  ray_nds = vec3(x, y, z);
+	vec3 ray_nds = vec3(x, y, z);
 
 	// clip space
 	vec4 ray_clip = vec4(x, y, -1.0, 1.0);
@@ -427,6 +364,19 @@ bool ray_sphere(vec3 ray_origin_wor, vec3 ray_direction_wor, vec3 sphere_centre_
 	return false;
 }
 
+void mouseWheel(int button, int dir, int x, int y)
+{
+	if (dir > 0)
+	{
+		// Zoom in
+	}
+	else
+	{
+		// Zoom out
+	}
+
+	return;
+}
 
 void mouse(int button, int state, int x, int y)
 {
@@ -465,7 +415,7 @@ void mouse(int button, int state, int x, int y)
 				}
 			}
 			if (selected_obj>-1)
-				printf("Oggetto selezionato %d -> %s \n", selected_obj, Scena[selected_obj].nome.c_str());
+				printf("Oggetto selezionato %d -> %s \n", selected_obj, Scena[selected_obj]->nome.c_str());
 		}
 		break;
 	default:
@@ -550,17 +500,17 @@ void drawScene(void)
 	/* ! CUORE !*/
 	for (int k =0; k <Scena.size(); k++)
 	{
-		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Scena[k].Model));
-		glUniform1i(lscelta, Scena[k].sceltaVS);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Scena[k]->Model));
+		glUniform1i(lscelta, Scena[k]->sceltaVS);
 		
-		glUniform3fv(light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k].material].ambient));
-		glUniform3fv(light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k].material].diffuse));
-		glUniform3fv(light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k].material].specular));
-		glUniform1f(light_unif.material_shininess, materials[Scena[k].material].shininess);
+		glUniform3fv(light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k]->material].ambient));
+		glUniform3fv(light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k]->material].diffuse));
+		glUniform3fv(light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k]->material].specular));
+		glUniform1f(light_unif.material_shininess, materials[Scena[k]->material].shininess);
 
-		glBindVertexArray(Scena[k].VAO);
-		glDrawElements(GL_TRIANGLES, (Scena[k].indici.size()-1)*sizeof(GLuint), GL_UNSIGNED_INT, 0);
- 		int ind = Scena[k].indici.size() - 1;
+		glBindVertexArray(Scena[k]->VAO);
+		glDrawElements(GL_TRIANGLES, (Scena[k]->indici.size()-1)*sizeof(GLuint), GL_UNSIGNED_INT, 0);
+ 		int ind = Scena[k]->indici.size() - 1;
 		//Disegno il centro della mesh: un punto in quella posizione
 	    //glDrawElements(GL_POINTS, 1,GL_UNSIGNED_INT, BUFFER_OFFSET(ind*sizeof(GLuint)));
 		glBindVertexArray(0);
@@ -614,7 +564,8 @@ int main(int argc, char* argv[])
 	glutKeyboardFunc(keyboardPressedEvent);
 	glutTimerFunc(10, update, 0);
 	glutMotionFunc(mouseActiveMotion); // Evento tasto premuto
-	
+	glutMouseWheelFunc(mouseWheel);
+
 	glewExperimental = GL_TRUE;
 	glewInit();
 

@@ -44,7 +44,6 @@ typedef struct {
 } Shader;
 
 
-
 typedef struct {
 	glm::vec3 position;
 	glm::vec3 color;
@@ -72,6 +71,7 @@ typedef struct {
 	mat4 Model;
 	int sceltaVS;
 	int sceltaFS;
+	float initialScaleMultiplier;
 	ShadingType shading;
 	MaterialType material;
 	GLuint VAO;
@@ -83,7 +83,7 @@ typedef struct {
 	string nome;
 } Mesh;
 
-static vector<Mesh> Scena;
+static vector<Mesh*> Scena;
 
 static vector<vec3> centri;
 static vector<float> raggi;
