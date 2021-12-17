@@ -169,6 +169,24 @@ void modifyModelMatrixToPos(Mesh* obj, glm::vec3 translation_vector, glm::vec3 r
 	obj->Model = obj->Model * scale * rotation * traslation;
 }
 
+vec3 calculateDirectionVecFromInt(int dir) {
+
+	switch (dir) {
+	case D_UP:
+		return vec3(0.0f, 0.0f, -1.0f);
+	case D_RIGHT:
+		return vec3(1.0f, 0.0f, 0.0f);
+	case D_LEFT:
+		return vec3(-1.0f, 0.0f, 0.0f);
+	case D_DOWN:
+		return vec3(0.0f, 0.0f, 1.0f);
+	default:
+		return vec3(0.0f, 0.0f, 0.0f);
+	}
+}
+
+
+
 void update(int a) {
 	/* Movement */
 	int slot = roadMatrix[row][column];
@@ -240,6 +258,8 @@ void update(int a) {
 		}
 	}
 
+
+
 	if (pathPositionalIndex == path.size()-1) {
 		pathPositionalIndex = 0;
 	}
@@ -248,14 +268,20 @@ void update(int a) {
 	}
 	vec3 positionVector = path[pathPositionalIndex];
 
+
+	vec3 directVect = car.position - cameraMovementHandler.oldPosition;
+	
 	modifyModelMatrixToPos(&Sole, positionVector, vec3(1.0f,0.0f,0.0f), 0.0f, 1.0f);
-	makeCameraTrackObject(&Sole);
-	//makeCameraFollowObject(&Sole, vec3(0.0f,0.0f, 30.0f));
+	makeCameraTrackObject(car.position);
+	//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
+	vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
+	makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
+	
+	cameraMovementHandler.oldPosition = car.position;
 
 	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
 	glutTimerFunc(10, update, 0);
 
-	glutTimerFunc(10, update, 0);
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
@@ -383,6 +409,15 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	case 'z':
 		WorkingAxis = Z;
 		break;
+	case '+':
+		cameraMovementHandler.deltaYOffset+=0.3f;
+		break;
+	case '-':
+		cameraMovementHandler.deltaYOffset-=0.3f;
+		break;
+	case 'v':
+		cameraMovementHandler.switchSideViewingSelector = -cameraMovementHandler.switchSideViewingSelector;
+		break;
 
 	default:
 		break;
@@ -483,11 +518,11 @@ void mouseWheel(int button, int dir, int x, int y)
 {
 	if (dir > 0)
 	{
-		// Zoom in
+		cameraMovementHandler.distanceMultiplierToTarget -= 10.0f;
 	}
 	else
 	{
-		// Zoom out
+		cameraMovementHandler.distanceMultiplierToTarget += 10.0f;
 	}
 
 	return;

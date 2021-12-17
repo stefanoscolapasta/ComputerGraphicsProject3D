@@ -402,7 +402,7 @@ void crea_cilindro(Mesh* mesh, vec4 colore)
 
 	int nv = mesh->vertici.size();
 
-	/* Attenzinion il +2 funziona ma è sospetto */
+	/* Attenzinion il +2 funziona ma ï¿½ sospetto */
 	for (int i = 0; i < Slices+2; i++) {
 		mesh->indici.push_back(i + 1);
 		mesh->indici.push_back(i);

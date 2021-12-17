@@ -12,9 +12,13 @@ typedef struct {
 	float deltaXOffset;
 	float offsetXMassimo;
 	vec3 startingCameraPos;
+	vec3 oldPosition;
+	float distanceMultiplierToTarget;
+	float deltaYOffset;
+	float switchSideViewingSelector;
 }CameraMovementHandler;
 
-CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position };
+CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position, vec3(0.0f,0.0f,0.0f),100.0f,10.0f,1 };
 
 vec3 calculateObjectVerticesBarycenter(Mesh* obj) {
 	float sumX = 0.0f;
@@ -48,6 +52,18 @@ void cameraMovementUpdateHandler(Mesh* target) {
 
 void makeCameraTrackObject(Mesh* objToFollow) {
 	ViewSetup.target = vec4(calculateObjectVerticesBarycenter(objToFollow), 0.0f);
+}
+
+void makeCameraTrackObject(vec3 position) {
+	ViewSetup.target = vec4(position, 0.0f);
+}
+
+void makeCameraPointDirection(vec3 direction) {
+	ViewSetup.direction = vec4(direction, 0.0f);
+}
+
+void makeCameraFollowObject(vec3 position, vec3 offsetToPos) {
+	ViewSetup.position = vec4(position + offsetToPos, 0.0f);
 }
 
 void makeCameraFollowObject(Mesh* objToFollow, vec3 offsetToPos) {
