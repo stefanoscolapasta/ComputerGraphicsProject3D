@@ -62,7 +62,7 @@
     <ClInclude Include="Menu.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
-    <ClInclude Include="cespuglio.h">
+    <ClInclude Include="Cespuglio.h">
       <Filter>File di intestazione\Object</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">

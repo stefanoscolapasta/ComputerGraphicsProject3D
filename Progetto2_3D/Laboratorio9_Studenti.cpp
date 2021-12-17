@@ -14,8 +14,9 @@
 #include "TransformMesh.h"
 #include "DrawMesh.h"
 #include "Strutture.h"
-
 #include FT_FREETYPE_H
+
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 enum {
 	NAVIGATION,
@@ -31,7 +32,6 @@ enum {
 	Z
 } WorkingAxis;
 
-
 World world = World();
 
 string Operazione;
@@ -40,28 +40,21 @@ int idfg;
 vec3 asse = vec3(0.0, 1.0, 0.0);
  
 int selected_obj = -1;
-Mesh Cubo, Piano, Piramide, Centri, Sfera;
 
 vector<Material> materials;
 vector<Shader> shaders;
 
-point_light light;
-
 //Puntatori alle variabili uniformi per l'impostazione dell'illuminazione
-LightShaderUniform light_unif = {};
-
 const float sphere_radius = 3.0f;
 static bool moving_trackball = 0;
 static int last_mouse_pos_Y;
 static int last_mouse_pos_X;
-#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 
 mat4 Projection, Model, View;
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
-
 float angolo = 0.0;
 
 
@@ -88,84 +81,16 @@ glm::vec3 getTrackBallPoint(float x, float y) {
 	return point;
 }
 
-
-Cespuglio cespuglio = Cespuglio();
-
-
 void INIT_VAO(void)
 {
-
-	Mesh Sfondo, cappello, pon, testa, naso, corpo, braccio_s, braccio_d, occhio_s, occhio_d, Casa, Palo, Telo, bottone, collo, bocca;
-	Mesh mano_d, mano_s, piede_s, gamba_s, gambda_d, piede_d;
-
-
-	Mesh foglia;
-	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
-
-	//SFONDO
-	crea_piano_suddiviso(&Sfondo, vec4(0.2, 0.2, 0.9, 0.5));
-	crea_VAO_Vector(&Sfondo);
-	Sfondo.nome = "Sfondo";
-
-	set_transform_values(&Sfondo, 
-		0.0f, 0.0f, -100.0f,
-		1000.0f, 1000.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 90.0f);
-	modify(&Sfondo, MatModel);
-
-	vec3 cx = Sfondo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	Sfondo.sceltaVS = 0;
-	Sfondo.material = MaterialType::EMERALD;
-	Scena.push_back(Sfondo);
-	 
-	//TERRENO
-	crea_piano_suddiviso(&Piano, vec4(0.9, 0.9, 0.9, 0.5));
-	crea_VAO_Vector(&Piano);
-	Piano.nome = "Piano Terra";
-
-	set_transform_values(&Piano,
-		0.0f, -4.5f, 0.0f,
-		1000.0f, 1.0f, 1000.0f,
-		0.0f, 0.0f, 1.0f, 0.0f);
-	modify(&Piano, MatModel);
-	cx = Piano.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	Piano.sceltaVS = 0;
-	Piano.material = MaterialType::EMERALD;
-	Scena.push_back(Piano);
+	world.build(MatModel);
+	world.upload_VA0_VB0();
+	world.insert_in_scena();
 	
-	//casa
-	crea_casa(&Casa, vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 0.9));
-	crea_VAO_Vector(&Casa);
-	Casa.nome = "Casa";
-	Casa.Model = mat4(1.0);
-	Casa.Model = translate(Casa.Model, vec3(0, -2.5, 0.0));
-	Casa.Model = scale(Casa.Model, vec3(2.0f, 2.0, 2.0f));
-	cx = Casa.Model * vec4(-1.5, 3.5, 0.0, 1.0);
-	centri.push_back(vec3(cx));
-	raggi.push_back(0.5);
-	Casa.sceltaVS = 0;
-	Casa.material = MaterialType::EMERALD;
-	//Scena.push_back(Casa);
-	
-	crea_sfera(&foglia, vec4(0.2, 1.0, 0.2, 1.0));
-	crea_VAO_Vector(&foglia);
-	foglia.nome = "Casa";
 
-	set_transform_values(&foglia, 0.0f, 0.3f, 0.0f, 
-		4.0f, 4.0f, 4.0f, 
-		0.0f, 0.0f, 1.0f, 0.0f);
-	modify(&foglia, MatModel);
-
-	cx = foglia.Model * vec4(-1.5, 3.5, 0.0, 1.0);
-	centri.push_back(vec3(cx));
-	raggi.push_back(0.5);
-	foglia.sceltaVS = 1;
-	foglia.material = MaterialType::EMERALD;
-	Scena.push_back(foglia);
+	world.cespuglio.build(MatModel);
+	world.cespuglio.upload_VA0_VB0();
+	world.cespuglio.insert_in_scena();
 
 }
 
@@ -401,6 +326,7 @@ void resize(int w, int h)
 
 void drawScene(void)
 {
+
 	/*
 	float timeValue = glutGet(GLUT_ELAPSED_TIME) * 0.001;
 	ViewSetup.position.x = sin(timeValue) * 10.0;
@@ -425,7 +351,7 @@ void drawScene(void)
 	glUniformMatrix4fv(MatView, 1, GL_FALSE, value_ptr(View));
 
 	//Definizione colore luce, posizione ed intensit�
-	define_light_position_and_intensity(&light_unif, &light, angolo);
+	define_light_position_and_intensity(&world.light_unif, &world.light, angolo);
 
 	//Passo la posizione della camera
 	glUniform3f(loc_view_pos, ViewSetup.position.x, ViewSetup.position.y, ViewSetup.position.z);
@@ -435,14 +361,18 @@ void drawScene(void)
 	/* ! CUORE !*/
 
 	for (int k =0; k <Scena.size(); k++) {
-		glUniform3fv(light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k].material].ambient));
-		glUniform3fv(light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k].material].diffuse));
-		glUniform3fv(light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k].material].specular));
-		glUniform1f(light_unif.material_shininess, materials[Scena[k].material].shininess);
+
+
 		glUniformMatrix4fv(MatModel, 1, GL_FALSE, glm::value_ptr(Scena[k].Model));
+		glUniform3fv(world.light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k].material].ambient));
+		glUniform3fv(world.light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k].material].diffuse));
+		glUniform3fv(world.light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k].material].specular));
+		glUniform1f(world.light_unif.material_shininess, materials[Scena[k].material].shininess);
+
 
 		draw_mesh(&Scena[k], GL_TRIANGLES, MatModel);
 	}
+
 	glutSwapBuffers();
 }
 
@@ -481,7 +411,6 @@ int main(int argc, char* argv[])
 	glutInitContextProfile(GLUT_CORE_PROFILE);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 
-
 	//Inizializzo finestra per il rendering della scena 3d con tutti i suoi eventi le sue inizializzazioni e le sue impostazioni
 	glutInitWindowSize(world.width, world.height);
 	glutInitWindowPosition(100, 100);
@@ -498,7 +427,7 @@ int main(int argc, char* argv[])
 
 	INIT_SHADER();
 	INIT_VAO();
-	INIT_Illuminazione(&light, materials, shaders);
+	INIT_Illuminazione(&world.light, materials, shaders);
 
 	buildOpenGLMenu();
 	INIT_CAMERA_PROJECTION(world.width, world.height);
@@ -521,13 +450,12 @@ int main(int argc, char* argv[])
 	 
 	lscelta = glGetUniformLocation(programId, "sceltaVs");
 	 
-	light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
-	light_unif.light_color_pointer = glGetUniformLocation(programId, "light.color");
-	light_unif.light_power_pointer = glGetUniformLocation(programId, "light.power");
-	light_unif.material_ambient = glGetUniformLocation(programId, "material.ambient");
-	light_unif.material_diffuse = glGetUniformLocation(programId, "material.diffuse");
-	light_unif.material_specular = glGetUniformLocation(programId, "material.specular");
-	light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");
+	world.light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
+	world.light_unif.light_color_pointer = glGetUniformLocation(programId, "light.color");
+	world.light_unif.light_power_pointer = glGetUniformLocation(programId, "light.power");
+	world.light_unif.material_ambient = glGetUniformLocation(programId, "material.ambient");
+	world.light_unif.material_diffuse = glGetUniformLocation(programId, "material.diffuse");
+	world.light_unif.material_specular = glGetUniformLocation(programId, "material.specular");
+	world.light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");
 	glutMainLoop();
 }
-

@@ -22,7 +22,7 @@ void define_light_position_and_intensity(LightShaderUniform* light_unif, point_l
 void draw_mesh(Mesh* mesh, int typeDraw, GLuint matModel) {
 	glUniform1i(lscelta, mesh->sceltaVS);
 	glBindVertexArray(mesh->VAO);
-	modify(mesh, MatModel);
+	modify(mesh, matModel);
 	glDrawElements(GL_TRIANGLES, (mesh->indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }

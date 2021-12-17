@@ -6,12 +6,18 @@
 #ifndef TRANSFORM_MESH_H
 #define TRANSFORM_MESH_H
 
+void increment_move(Mesh* mesh, float dx, float dy, float dz) {
+	mesh->dx += dx;
+	mesh->dy += dy;
+	mesh->dz += dz;
+}
 
 void set_move_value(Mesh* mesh, float dx, float dy, float dz) {
 	mesh->dx = dx;
 	mesh->dy = dy;
 	mesh->dz = dz;
 }
+
 
 void set_scale_value(Mesh* mesh, float scalex, float scaley, float scalez) {
 	mesh->scalex = scalex;
