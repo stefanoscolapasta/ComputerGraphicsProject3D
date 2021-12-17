@@ -156,6 +156,7 @@
     <ClInclude Include="Materiali.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="ShaderMaker.h" />
+    <ClInclude Include="Sole.h" />
     <ClInclude Include="Strutture.h" />
     <ClInclude Include="VAO_And_Shader_Init.h" />
     <ClInclude Include="World.h" />

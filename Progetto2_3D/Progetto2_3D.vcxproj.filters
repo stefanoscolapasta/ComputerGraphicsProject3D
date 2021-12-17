@@ -68,6 +68,9 @@
     <ClInclude Include="Menu.h">
       <Filter>File di intestazione</Filter>
     </ClInclude>
+    <ClInclude Include="Sole.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

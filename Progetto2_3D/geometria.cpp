@@ -97,7 +97,6 @@ void crea_piramide(Mesh* mesh)
 
 	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(2);
 	mesh->indici.push_back(0); mesh->indici.push_back(2); mesh->indici.push_back(3);
-
 	mesh->indici.push_back(0); mesh->indici.push_back(4); mesh->indici.push_back(3);
 	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(4);
 
