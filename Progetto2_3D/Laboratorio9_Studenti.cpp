@@ -14,6 +14,7 @@
 #include "TransformMesh.h"
 #include "DrawMesh.h"
 #include "Strutture.h"
+#include "KeyCar.h"
 #include FT_FREETYPE_H
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -31,6 +32,7 @@ enum {
 	Y,
 	Z
 } WorkingAxis;
+void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor);
 
 World world = World();
 
@@ -40,6 +42,9 @@ int idfg;
 vec3 asse = vec3(0.0, 1.0, 0.0);
  
 int selected_obj = -1;
+
+Mesh Cubo, Tetto, Cofano, Ruota, Piano, Piramide, Centri, Sfera, Sole, Sfondo;
+Mesh cerchio, quadrato;
 
 vector<Material> materials;
 vector<Shader> shaders;
@@ -57,14 +62,190 @@ float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 float angolo = 0.0;
 
+float period = 400; // 4 secondi
+
+int row = 0;
+int column = 0;
+
+Road road= { 12, vec3(-6 * 12, 0, -6 * 12) };
+Car car = { vec3(road.width / 2, 0, road.width) + road.position, D_UP, ((2 * (float)PI) * (road.width / 2) / period) };
+
+
+
+
+vector<vec3> createCircularPathAtPos(float posZ) {
+	int radious = 10.0f;
+	int nTriangles = 100;
+	float step = (2 * PI) / ((float)nTriangles);
+
+	vector<vec3> positions;
+
+	for (int i = 0; i <= nTriangles; i++) {
+		positions.push_back(vec3(cos((double)i * step) * radious, sin((double)i * step) * radious, 0.0f));
+	}
+
+	return positions;
+}
+
+vector<vec3> path = createCircularPathAtPos(5.0f);
+int pathPositionalIndex = 0;
+
+void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
+{
+	//ricordare che mat4(1) costruisce una matrice identità di ordine 4
+	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
+	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(scale_factor, scale_factor, scale_factor));
+	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
+
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		obj->vertici[i] += translation_vector * obj->initialScaleMultiplier;
+		//funziona solo se l'oggetto seguito ha una scale = 1;
+		//Per farlo funzionare devo moltiplicare il vettore applicato alla matrice model per il moltiplicatore della scale iniziale
+	}
+
+	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
+
+	obj->Model = obj->Model * scale * rotation * traslation;
+
+}
+
+void modifyModelMatrixToPos(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
+{
+	//ricordare che mat4(1) costruisce una matrice identità di ordine 4
+	obj->Model = mat4(1);
+
+	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
+	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(obj->initialScaleMultiplier, obj->initialScaleMultiplier, obj->initialScaleMultiplier));
+	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
+
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		obj->vertici[i] = translation_vector * obj->initialScaleMultiplier;
+		//funziona solo se l'oggetto seguito ha una scale = 1;
+		//Per farlo funzionare devo moltiplicare il vettore applicato alla matrice model per il moltiplicatore della scale iniziale
+	}
+
+	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
+
+	obj->Model = obj->Model * scale * rotation * traslation;
+}
+
+vec3 calculateDirectionVecFromInt(int dir) {
+
+	switch (dir) {
+	case D_UP:
+		return vec3(0.0f, 0.0f, -1.0f);
+	case D_RIGHT:
+		return vec3(1.0f, 0.0f, 0.0f);
+	case D_LEFT:
+		return vec3(-1.0f, 0.0f, 0.0f);
+	case D_DOWN:
+		return vec3(0.0f, 0.0f, 1.0f);
+	default:
+		return vec3(0.0f, 0.0f, 0.0f);
+	}
+}
+
+
 
 void update(int a) {
-	angolo += 0.1;
+	/* Movement */
+	int slot = roadMatrix[row][column];
+	if ((slot == UP_L && car.direction == D_UP) || (slot == UP_R && car.direction == D_RIGHT)
+		|| (slot == DW_R && car.direction == D_DOWN) || (slot == DW_L && car.direction == D_LEFT))
+	{
+		vec3 velocity = -car.velocity * vec3(0, 0, 1);
+		car.rotation += 2 * PI / (period);
+		car.position += vec3(vec4(velocity, 0) * rotate(mat4(1), car.rotation, vec3(0, 1, 0)));
+	}
+	else if ((slot == UP_L && car.direction == D_LEFT) || (slot == UP_R && car.direction == D_UP)
+		|| (slot == DW_R && car.direction == D_RIGHT) || (slot == DW_L && car.direction == D_DOWN))
+	{
+		vec3 velocity = -car.velocity * vec3(0, 0, 1);
+		car.rotation -= 2 * PI / (period);
+		car.position += vec3(vec4(velocity, 0) * rotate(mat4(1), car.rotation, vec3(0, 1, 0)));
+	}
+	else if (roadMatrix[row][column] == STR) 
+	{
+		if (car.direction == D_RIGHT) {
+			car.position += car.velocity * vec3(1, 0, 0);
+		}
+		else if (car.direction == D_DOWN) {
+			car.position += car.velocity * vec3(0, 0, 1);
+		}
+		else if (car.direction == D_UP) {
+			car.position -= car.velocity * vec3(0, 0, 1);
+		}
+		else if (car.direction == D_LEFT) {
+			car.position -= car.velocity * vec3(1, 0, 0);
+		}
+	}
+
+	/**/
+	if (car.position.x >= road.position.x + (column + 1) * road.width) {
+		if (slot == UP_L && car.direction == D_UP || slot == DW_L && car.direction == D_DOWN) {
+			car.direction = D_RIGHT;
+			column++;
+		}
+		else if (slot == STR && car.direction == D_RIGHT) {
+			column++;
+		}
+	}
+	else if (car.position.x <= road.position.x + column * road.width) {
+		if (slot == UP_R && car.direction == D_UP || slot == DW_R && car.direction == D_DOWN) {
+			car.direction = D_LEFT;
+			column--;
+		}
+		else if (slot == STR && car.direction == D_LEFT) {
+			column--;
+		}
+	}
+	else if (car.position.z >= road.position.z + (row + 1) * road.width) {
+		if (slot == UP_R && car.direction == D_RIGHT || slot == UP_L && car.direction == D_LEFT) {
+			car.direction = D_DOWN;
+			row++;
+		}
+		else if (slot == STR && car.direction == D_DOWN) {
+			row++;
+		}
+	}
+	else if (car.position.z <= road.position.z + row * road.width) {
+		if (slot == DW_R && car.direction == D_RIGHT || slot == DW_L && car.direction == D_LEFT) {
+			car.direction = D_UP;
+			row--;
+		}
+		else if (slot == STR && car.direction == D_UP) {
+			row--;
+		}
+	}
+
+
+
+	if (pathPositionalIndex == path.size()-1) {
+		pathPositionalIndex = 0;
+	}
+	else {
+		pathPositionalIndex++;
+	}
+	vec3 positionVector = path[pathPositionalIndex];
+
+
+	vec3 directVect = car.position - cameraMovementHandler.oldPosition;
+	
+	modifyModelMatrixToPos(&Sole, positionVector, vec3(1.0f,0.0f,0.0f), 0.0f, 1.0f);
+	makeCameraTrackObject(car.position);
+	//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
+	vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
+	makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
+	
+	cameraMovementHandler.oldPosition = car.position;
+
+	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
 	glutTimerFunc(10, update, 0);
 
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
+
 
 glm::vec3 getTrackBallPoint(float x, float y) {
 	//La trackball virtuale pu� fornire un'interfaccia utente intuitiva 
@@ -83,6 +264,7 @@ glm::vec3 getTrackBallPoint(float x, float y) {
 
 void INIT_VAO(void)
 {
+
 	world.build(MatModel);
 	world.upload_VA0_VB0();
 	world.insert_in_scena();
@@ -92,24 +274,45 @@ void INIT_VAO(void)
 	world.insert_cespugli_in_scena();
 
 	world.set_position_cespugli(-100, 0, 300);
+
+	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
+	crea_curva(&cerchio, road.width);
+	crea_VAO_Vector(&cerchio);
+	crea_piano(&quadrato);
+	crea_VAO_Vector(&quadrato);
+	crea_cubo(&Cubo, vec4(0, 0, 1, 1), vec4(0, 1, 1, 1));
+	crea_VAO_Vector(&Cubo);
+	crea_tetto_macchina(&Tetto, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1));
+	crea_VAO_Vector(&Tetto);
+	crea_cofano(&Cofano);
+	crea_VAO_Vector(&Cofano);
+	crea_cilindro(&Ruota, vec4(0, 0, 0, 1));
+	crea_VAO_Vector(&Ruota);
+
+	//SOLE
+	crea_sfera(&Sole, vec4(1.0, 1.0, 0.0, 1.0));
+	crea_VAO_Vector(&Sole);
+	Sole.nome = "Sole";
+	Sole.Model = mat4(1.0);
+	Sole.Model = translate(Sole.Model, vec3(0, 2.5, 0));
+	Sole.initialScaleMultiplier = 4.0f;
+	Sole.Model = scale(Sole.Model, vec3(Sole.initialScaleMultiplier, Sole.initialScaleMultiplier, Sole.initialScaleMultiplier));
+	//cx = Sole.Model * vec4(-1.5, 3.5, 0.0, 1.0);
+	//centri.push_back(vec3(cx));
+	raggi.push_back(0.5);
+	Sole.sceltaVS = 0;
+	Sole.material = MaterialType::RED_PLASTIC;
+	Scena.push_back(&Sole);
 }
 
-void modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
-{
-	//ricordare che mat4(1) costruisce una matrice identit� di ordine 4
-	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
-	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(scale_factor, scale_factor, scale_factor));
-	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
 
-	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
-
-	if (selected_obj > -1)
-	{
-		Scena[selected_obj]->Model = Scena[selected_obj]->Model * scale * rotation * traslation;
-		centri[selected_obj] = centri[selected_obj] + translation_vector;
-		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
-	}
-}
+// 	if (selected_obj > -1)
+// 	{
+// 		Scena[selected_obj]->Model = Scena[selected_obj]->Model * scale * rotation * traslation;
+// 		centri[selected_obj] = centri[selected_obj] + translation_vector;
+// 		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
+// 	}
+// }
 
 
 void keyboardPressedEvent(unsigned char key, int x, int y) {
@@ -142,6 +345,15 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	case 'z':
 		WorkingAxis = Z;
 		break;
+	case '+':
+		cameraMovementHandler.deltaYOffset+=0.3f;
+		break;
+	case '-':
+		cameraMovementHandler.deltaYOffset-=0.3f;
+		break;
+	case 'v':
+		cameraMovementHandler.switchSideViewingSelector = -cameraMovementHandler.switchSideViewingSelector;
+		break;
 
 	default:
 		break;
@@ -169,15 +381,15 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 		// definisce la matrice di modellazione che si vuole postmoltiplicare alla matrice di modellazione dell'oggetto selezionato, per poterlo traslare, ruotare scalare.
 	case TRASLATING:
 		// si passa angle 0 e scale factor =1, 
-		modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
+		//modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
 		break;
 	case ROTATING:
 		// SI mette a zero il vettore di traslazione (vec3(0) e ad 1 il fattore di scale
-		modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
+		//modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
 		break;
 	case SCALING:
 		// SI mette a zero il vettore di traslazione (vec3(0), angolo di rotazione a 0 e ad 1 il fattore di scala 1+amount.
-		modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
+		//modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
 		break;
 	}
 	glutSetWindow(idfg);
@@ -189,7 +401,7 @@ vec3 get_ray_from_mouse(float mouse_x, float mouse_y) {
 	float x = (2.0f * mouse_x) / world.width - 1.0;
 	float y = 1.0f - (2.0f * mouse_y) / world.height;
 	float z = 1.0f;
-	vec3  ray_nds = vec3(x, y, z);
+	vec3 ray_nds = vec3(x, y, z);
 
 	// clip space
 	vec4 ray_clip = vec4(x, y, -1.0, 1.0);
@@ -238,6 +450,19 @@ bool ray_sphere(vec3 ray_origin_wor, vec3 ray_direction_wor, vec3 sphere_centre_
 	return false;
 }
 
+void mouseWheel(int button, int dir, int x, int y)
+{
+	if (dir > 0)
+	{
+		cameraMovementHandler.distanceMultiplierToTarget -= 10.0f;
+	}
+	else
+	{
+		cameraMovementHandler.distanceMultiplierToTarget += 10.0f;
+	}
+
+	return;
+}
 
 void mouse(int button, int state, int x, int y)
 {
@@ -359,6 +584,7 @@ void drawScene(void)
 
 
 	/* ! CUORE !*/
+
 	//world.cespuglio.set_position(10.0f, 10.0f, 10.0f);
 
 	for (int k =0; k < Scena.size(); k++) {
@@ -371,6 +597,109 @@ void drawScene(void)
 		draw_mesh(&(*Scena[k]), GL_TRIANGLES, MatModel);
 	}
 
+	Cubo.Model = mat4(1);
+	Cubo.Model = translate(Cubo.Model, car.position);
+	Cubo.Model = rotate(Cubo.Model, -car.rotation, vec3(0, 1, 0));
+	Cubo.Model = translate(Cubo.Model, vec3(0, 1.1, 0));
+	Cubo.Model = scale(Cubo.Model, vec3(2, 0.1, 4));
+	glBindVertexArray(Cubo.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cubo.Model));
+	glDrawElements(GL_TRIANGLES, (Cubo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Tetto.Model = mat4(1);
+	Tetto.Model = translate(Tetto.Model, car.position);
+	Tetto.Model = rotate(Tetto.Model, -car.rotation, vec3(0, 1, 0));
+	Tetto.Model = translate(Tetto.Model, vec3(0, 1.9, 1));
+	Tetto.Model = scale(Tetto.Model, vec3(2, 0.8, 3));
+
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Tetto.Model));
+	draw_mesh_kel(&Tetto, GL_TRIANGLES, MatModel);
+
+
+	Cofano.Model = mat4(1);
+	Cofano.Model = translate(Cofano.Model, car.position);
+	Cofano.Model = rotate(Cofano.Model, -car.rotation, vec3(0, 1, 0));
+	Cofano.Model = translate(Cofano.Model, vec3(0, 1.2, -3));
+	Cofano.Model = scale(Cofano.Model, vec3(2, 1, 1));
+	glBindVertexArray(Cofano.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cofano.Model));
+	glDrawElements(GL_TRIANGLES, (Cofano.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, -3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(2, 0.5, -3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, 3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(2, 0.5, 3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	
+	for (int i = 0; i < roadMatrix.size(); i++) {
+		for (int j = 0; j < roadMatrix[i].size(); j++) {
+			mat4 modellation = translate(mat4(1), road.position + vec3(j * road.width, 0, (i + 1) * road.width));
+			if (roadMatrix[i][j] >= UP_R && roadMatrix[i][j] <= DW_R) {
+				cerchio.Model = modellation;
+				switch (roadMatrix[i][j])
+				{
+				case UP_L:
+					cerchio.Model = translate(cerchio.Model, vec3(road.width, 0, 0));
+					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, 1));
+					break;
+				case DW_L:
+					cerchio.Model = translate(cerchio.Model, vec3(road.width, 0, -road.width));
+					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, -1));
+					break;
+				case DW_R:
+					cerchio.Model = translate(cerchio.Model, vec3(0, 0, -road.width));
+					cerchio.Model = scale(cerchio.Model, vec3(1, 1, -1));
+					break;
+				default:
+					break;
+				}
+				glBindVertexArray(cerchio.VAO);
+				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
+				glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+			} else if (roadMatrix[i][j] == STR) {
+				quadrato.Model = modellation;
+				quadrato.Model = translate(quadrato.Model, vec3(road.width/2, 0, -road.width/2));
+				quadrato.Model = scale(quadrato.Model, vec3(road.width/2, 1, road.width/2));
+				glBindVertexArray(quadrato.VAO);
+				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
+				glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+			}
+		}
+	}
 	glutSwapBuffers();
 }
 
@@ -417,9 +746,11 @@ int main(int argc, char* argv[])
 	glutReshapeFunc(resize);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboardPressedEvent);
-	glutTimerFunc(10, update, 0);
+	glutSpecialFunc(SpecialInput);
+	glutTimerFunc(2000, update, 0);
 	glutMotionFunc(mouseActiveMotion); // Evento tasto premuto
-	
+	glutMouseWheelFunc(mouseWheel);
+
 	glewExperimental = GL_TRUE;
 	glewInit();
 

@@ -1,87 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="File di origine">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="File di intestazione">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="File di risorse">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="File di intestazione\Object">
-      <UniqueIdentifier>{75e0dba5-2849-4fb3-9a49-686e980a2db4}</UniqueIdentifier>
-    </Filter>
+    <ClCompile Include="geometria.cpp" />
+    <ClCompile Include="GestioneTesto.cpp" />
+    <ClCompile Include="Laboratorio9_Studenti.cpp" />
+    <ClCompile Include="road.cpp" />
+    <ClCompile Include="ShaderMaker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="geometria.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="GestioneTesto.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="Laboratorio9_Studenti.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderMaker.cpp">
-      <Filter>File di origine</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="geometria.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Lib.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderMaker.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Strutture.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Materiali.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="VAO_And_Shader_Init.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="World.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Illuminazione.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="DrawMesh.h" />
+    <ClInclude Include="geometria.h" />
+    <ClInclude Include="Illuminazione.h" />
+    <ClInclude Include="Lib.h" />
+    <ClInclude Include="Materiali.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="ShaderMaker.h" />
+    <ClInclude Include="Sole.h" />
+    <ClInclude Include="Strutture.h" />
+    <ClInclude Include="TransformMesh.h" />
+    <ClInclude Include="VAO_And_Shader_Init.h" />
+    <ClInclude Include="World.h" />
     <ClInclude Include="Agglomerato.h">
-      <Filter>File di intestazione\Object</Filter>
+      <Filter>Oggetti</Filter>
     </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformMesh.h">
-      <Filter>File di intestazione</Filter>
-    </ClInclude>
-    <ClInclude Include="DrawMesh.h">
-      <Filter>File di intestazione</Filter>
+    <ClInclude Include="KeyCar.h">
+      <Filter>Oggetti</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="fragmentShader_C.glsl" />
     <None Include="packages.config" />
-    <None Include="fragmentShader_C.glsl">
-      <Filter>File di risorse</Filter>
-    </None>
-    <None Include="vertexShader_C.glsl">
-      <Filter>File di risorse</Filter>
-    </None>
+    <None Include="vertexShader_C.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Oggetti">
+      <UniqueIdentifier>{d90b0a1c-b2b3-4eb2-b051-871042d9d59e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

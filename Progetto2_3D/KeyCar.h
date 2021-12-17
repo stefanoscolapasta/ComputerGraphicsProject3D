@@ -1,0 +1,29 @@
+#pragma once
+#define EMPTY 0
+#define UP_R 1
+#define UP_L 2
+#define DW_L 3
+#define DW_R 4
+#define STR 5
+
+#define D_UP 0
+#define D_RIGHT 1 
+#define D_DOWN 2
+#define D_LEFT 3
+
+#ifndef KEYCAR_H
+#define KEYCAR_H
+
+static vector<vector<int>> roadMatrix = {
+	{UP_L, STR, STR, UP_R, EMPTY, UP_L, STR, UP_R, EMPTY, UP_L, STR, UP_R},
+	{STR, EMPTY, EMPTY, DW_L, STR, DW_R, EMPTY, STR, EMPTY, STR, EMPTY, STR},
+	{STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR, EMPTY, STR, EMPTY, STR},
+	{DW_L, STR, STR, UP_R, EMPTY, EMPTY, EMPTY, DW_L, STR, DW_R, EMPTY, STR},
+	{EMPTY, EMPTY, EMPTY, STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR},
+	{UP_L, STR, STR, DW_R, EMPTY, EMPTY, EMPTY, EMPTY, UP_L, STR, STR, DW_R},
+	{STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR, EMPTY, EMPTY, EMPTY},
+	{DW_L, STR, STR, STR, STR, STR, STR, STR, DW_R, EMPTY, EMPTY, EMPTY}
+};
+
+
+#endif // !KEYCAR_H

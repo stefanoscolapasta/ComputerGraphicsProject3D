@@ -27,5 +27,13 @@ void draw_mesh(Mesh* mesh, int typeDraw, GLuint matModel) {
 	glBindVertexArray(0);
 }
 
+void draw_mesh_kel(Mesh* mesh, int typeDraw, GLuint matModel) {
+	glUniform1i(lscelta, 0);
+	glBindVertexArray(mesh->VAO);
+	//modify(mesh, matModel);
+	glDrawElements(GL_TRIANGLES, (mesh->indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
 
 #endif // !DRAW_MESH_H

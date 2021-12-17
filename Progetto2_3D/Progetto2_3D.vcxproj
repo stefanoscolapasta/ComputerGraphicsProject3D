@@ -144,6 +144,7 @@
     <ClCompile Include="geometria.cpp" />
     <ClCompile Include="GestioneTesto.cpp" />
     <ClCompile Include="Laboratorio9_Studenti.cpp" />
+    <ClCompile Include="road.cpp" />
     <ClCompile Include="ShaderMaker.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,10 +154,12 @@
     <ClInclude Include="DrawMesh.h" />
     <ClInclude Include="geometria.h" />
     <ClInclude Include="Illuminazione.h" />
+    <ClInclude Include="KeyCar.h" />
     <ClInclude Include="Lib.h" />
     <ClInclude Include="Materiali.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="ShaderMaker.h" />
+    <ClInclude Include="Sole.h" />
     <ClInclude Include="Strutture.h" />
     <ClInclude Include="TransformMesh.h" />
     <ClInclude Include="VAO_And_Shader_Init.h" />
