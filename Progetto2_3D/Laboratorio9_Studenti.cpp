@@ -88,7 +88,7 @@ void INIT_VAO(void)
 	world.insert_in_scena();
 	
 
-	world.cespuglio.build(MatModel);
+	world.cespuglio.build_nuvola(MatModel);
 	world.cespuglio.upload_VA0_VB0();
 	world.cespuglio.insert_in_scena();
 

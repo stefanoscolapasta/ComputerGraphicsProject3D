@@ -22,6 +22,9 @@ public:
 	Mesh muro;
 	Mesh piano;
 
+	list<Agglomerato*> cespugli;
+	list<Agglomerato*> nuvole;
+
 	Agglomerato cespuglio;
 
 	World();

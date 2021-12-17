@@ -27,7 +27,8 @@ public:
 	Agglomerato();
 	//~Cespuglio();
 
-	void build(GLuint matModel);
+	void build_cespuglio(GLuint matModel);
+	void build_nuvola(GLuint matModel);
 	void upload_VA0_VB0();
 	void insert_in_scena();
 	void set_sceltaVS(int scelta);
@@ -61,7 +62,7 @@ void Agglomerato::set_init_position(GLuint matModel) {
 	}
 }
 
-void Agglomerato::build(GLuint matModel) {
+void Agglomerato::build_cespuglio(GLuint matModel) {
 	for (int i = 0; i < this->nLeaf; i++) {
 		Mesh foglia = {};
 		crea_sfera(&foglia, vec_RGBA(63, 195, 128));
@@ -73,6 +74,20 @@ void Agglomerato::build(GLuint matModel) {
 
 	this->set_init_position(matModel);
 	this->set_sceltaVS(1);
+}
+
+void Agglomerato::build_nuvola(GLuint matModel) {
+	for (int i = 0; i < this->nLeaf; i++) {
+		Mesh foglia = {};
+		crea_sfera(&foglia, vec_RGBA(3, 138, 255));
+		foglia.nome = "foglia";
+		foglia.sceltaVS = 1;
+		foglia.material = MaterialType::EMERALD;
+		this->body.push_back(foglia);
+	}
+
+	this->set_init_position(matModel);
+	this->set_sceltaVS(0);
 }
 
 void Agglomerato::insert_in_scena() {
