@@ -14,6 +14,8 @@
 
 #include FT_FREETYPE_H
 
+#define PI 3.14159265358979323846
+
 void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor);
 
 int width = 1024;
@@ -64,44 +66,26 @@ float lastFrame = 0.0f; // Time of last frame
 
 Mesh Sfondo, Piano, Casa, Sole;
 
-typedef struct {
-	float deltaXOffset;
-	float offsetXMassimo;
-	vec3 startingCameraPos;
-}CameraMovementHandler;
-
-CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position };
-
 float angolo = 0.0;
 
-vec3 calculateObjectVerticesBarycenter(Mesh* obj) {
-	float sumX = 0.0f;
-	float sumY = 0.0f;
-	float sumZ = 0.0f;
+vector<vec3> createCircularPathAtPos(float posZ) {
+	int radious = 10.0f;
+	int nTriangles = 100;
+	float step = (2 * PI) / ((float)nTriangles);
 
-	for (int i = 0; i < obj->vertici.size(); i++) {
-		sumX += obj->vertici[i].x;
-		sumY += obj->vertici[i].y;
-		sumZ += obj->vertici[i].z;
+	vector<vec3> positions;
+
+	for (int i = 0; i <= nTriangles; i++) {
+		positions.push_back(vec3(cos((double)i * step) * radious, sin((double)i * step) * radious, 0.0f));
 	}
 
-	int numberOfVertices = obj->vertici.size();
-
-	return vec3(sumX/((float)numberOfVertices), sumY / ((float)numberOfVertices), sumZ / ((float)numberOfVertices));
-
+	return positions;
 }
 
-bool checkIfCameraReachedFixedBoundary() {
-	return ViewSetup.position.x > cameraMovementHandler.startingCameraPos.x + cameraMovementHandler.offsetXMassimo ||
-		ViewSetup.position.x < cameraMovementHandler.startingCameraPos.x - cameraMovementHandler.offsetXMassimo;
-}
+vector<vec3> path = createCircularPathAtPos(5.0f);
+int pathPositionalIndex = 0;
 
-void cameraMovementUpdateHandler(Mesh* target){
-	if (checkIfCameraReachedFixedBoundary()) {
-		cameraMovementHandler.deltaXOffset = -cameraMovementHandler.deltaXOffset;
-	}
-	ViewSetup.position.x += cameraMovementHandler.deltaXOffset;
-}
+
 
 void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
 {
@@ -122,31 +106,40 @@ void modifyModelMatrix(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotati
 
 }
 
-void modifyModelMatrixToPos(Mesh* obj, glm::vec3 positional_vector)
+void modifyModelMatrixToPos(Mesh* obj, glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
 {
 	//ricordare che mat4(1) costruisce una matrice identità di ordine 4
 	obj->Model = mat4(1);
-	mat4 traslation = glm::translate(glm::mat4(1), positional_vector);
+	
+	mat4 traslation = glm::translate(glm::mat4(1), translation_vector);
+	mat4 scale = glm::scale(glm::mat4(1), glm::vec3(obj->initialScaleMultiplier, obj->initialScaleMultiplier, obj->initialScaleMultiplier));
+	mat4 rotation = glm::rotate(glm::mat4(1), angle, rotation_vector);
 
-	obj->Model = obj->Model * traslation;
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		obj->vertici[i] = translation_vector * obj->initialScaleMultiplier;
+		//funziona solo se l'oggetto seguito ha una scale = 1;
+		//Per farlo funzionare devo moltiplicare il vettore applicato alla matrice model per il moltiplicatore della scale iniziale
+	}
+
+	//Modifica la matrice di Modellazione dell'oggetto della scena selezionato postmolitplicando per le matrici scale*rotation*traslation
+
+	obj->Model = obj->Model * scale * rotation * traslation;
 }
 
-void makeCameraTrackObject(Mesh* objToFollow) {
-	ViewSetup.target = vec4(calculateObjectVerticesBarycenter(objToFollow), 0.0f);
-}
-
-void makeCameraFollowObject(Mesh* objToFollow, vec3 offsetToPos) {
-	ViewSetup.position = vec4(calculateObjectVerticesBarycenter(objToFollow) + offsetToPos, 0.0f);
-}
 
 void update(int a) {
 	angolo += 0.1;
+	if (pathPositionalIndex == path.size()-1) {
+		pathPositionalIndex = 0;
+	}
+	else {
+		pathPositionalIndex++;
+	}
+	vec3 positionVector = path[pathPositionalIndex];
 
-	vec3 movementVector = vec3(.05f, .05f, 0.0f);
-
-	modifyModelMatrix(&Sole, movementVector, vec3(1.0f, 0, 0), 0.0f, 1.0f);
+	modifyModelMatrixToPos(&Sole, positionVector, vec3(1.0f,0.0f,0.0f), 0.0f, 1.0f);
 	makeCameraTrackObject(&Sole);
-	//makeCameraFollowObject(&Sole, vec3(0.0f,0.0f,10.0f));
+	//makeCameraFollowObject(&Sole, vec3(0.0f,0.0f, 30.0f));
 
 	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
 	glutTimerFunc(10, update, 0);
@@ -175,22 +168,6 @@ void INIT_VAO(void)
 {
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 
-	//SFONDO
-	crea_piano_suddiviso(&Sfondo, vec4(0.2, 0.2, 0.9, 0.5));
-	crea_VAO_Vector(&Sfondo);
-	Sfondo.nome = "Sfondo";
-	Sfondo.Model = mat4(1.0);
-	Sfondo.Model = translate(Sfondo.Model, vec3(0.0, 0.0, -100.0));
-	
-	Sfondo.Model = scale(Sfondo.Model, vec3(1000.0f, 1000.00f, 1.0f));
-	Sfondo.Model = rotate(Sfondo.Model, radians(90.0f), vec3(1.0, 0.0, 0.0));
-	vec3 cx = Sfondo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	Sfondo.sceltaVS = 0;
-	Sfondo.material = MaterialType::EMERALD;
-	Scena.push_back(&Sfondo);
-	 
 	//TERRENO
 	crea_piano_suddiviso(&Piano, vec4(0.9, 0.9, 0.9, 0.5));
 	crea_VAO_Vector(&Piano);
@@ -199,7 +176,7 @@ void INIT_VAO(void)
 	Piano.Model = translate(Piano.Model, vec3(0.0, -4.5, 0.0));
 	
 	Piano.Model = scale(Piano.Model, vec3(1000.0f, 1.0f, 1000.0f));
-	cx = Piano.Model * vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 cx = Piano.Model * vec4(0.0, 0.0, 0.0, 1.0);
 	centri.push_back(cx);
 	raggi.push_back(0.5);
 	Piano.sceltaVS = 0;
