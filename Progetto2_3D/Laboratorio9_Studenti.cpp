@@ -10,7 +10,7 @@
 #include "World.h"
 #include "Camera.h"
 #include "Menu.h"
-#include "cespuglio.h"
+#include "Agglomerato.h"
 #include "TransformMesh.h"
 #include "DrawMesh.h"
 #include "Strutture.h"
@@ -105,7 +105,7 @@ void modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, 
 
 	if (selected_obj > -1)
 	{
-		Scena[selected_obj].Model = Scena[selected_obj].Model * scale * rotation * traslation;
+		Scena[selected_obj]->Model = Scena[selected_obj]->Model * scale * rotation * traslation;
 		centri[selected_obj] = centri[selected_obj] + translation_vector;
 		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
 	}
@@ -276,7 +276,7 @@ void mouse(int button, int state, int x, int y)
 				}
 			}
 			if (selected_obj>-1)
-				printf("Oggetto selezionato %d -> %s \n", selected_obj, Scena[selected_obj].nome.c_str());
+				printf("Oggetto selezionato %d -> %s \n", selected_obj, Scena[selected_obj]->nome.c_str());
 		}
 		break;
 	default:
@@ -359,18 +359,16 @@ void drawScene(void)
 
 
 	/* ! CUORE !*/
+	//world.cespuglio.set_position(10.0f, 10.0f, 10.0f);
 
-	for (int k =0; k <Scena.size(); k++) {
+	for (int k =0; k < Scena.size(); k++) {
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, glm::value_ptr(Scena[k]->Model));
+		glUniform3fv(world.light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k]->material].ambient));
+		glUniform3fv(world.light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k]->material].diffuse));
+		glUniform3fv(world.light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k]->material].specular));
+		glUniform1f(world.light_unif.material_shininess, materials[Scena[k]->material].shininess);
 
-
-		glUniformMatrix4fv(MatModel, 1, GL_FALSE, glm::value_ptr(Scena[k].Model));
-		glUniform3fv(world.light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k].material].ambient));
-		glUniform3fv(world.light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k].material].diffuse));
-		glUniform3fv(world.light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k].material].specular));
-		glUniform1f(world.light_unif.material_shininess, materials[Scena[k].material].shininess);
-
-
-		draw_mesh(&Scena[k], GL_TRIANGLES, MatModel);
+		draw_mesh(&(*Scena[k]), GL_TRIANGLES, MatModel);
 	}
 
 	glutSwapBuffers();

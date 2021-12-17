@@ -148,7 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Cespuglio.h" />
+    <ClInclude Include="Agglomerato.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="DrawMesh.h" />
     <ClInclude Include="geometria.h" />

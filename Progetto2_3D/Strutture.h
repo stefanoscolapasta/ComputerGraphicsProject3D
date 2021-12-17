@@ -95,7 +95,7 @@ typedef struct {
 
 } Mesh;
 
-static vector<Mesh> Scena;
+static vector<Mesh*> Scena;
 
 static vector<vec3> centri;
 static vector<float> raggi;

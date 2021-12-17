@@ -1,6 +1,6 @@
 #pragma once
 #include <list>
-#include "Cespuglio.h"
+#include "Agglomerato.h"
 #include "Strutture.h"
 
 #ifndef WORLD_H
@@ -22,7 +22,7 @@ public:
 	Mesh muro;
 	Mesh piano;
 
-	Cespuglio cespuglio;
+	Agglomerato cespuglio;
 
 	World();
 
@@ -86,8 +86,8 @@ void World::upload_VA0_VB0() {
 }
 
 void World::insert_in_scena() {
-	Scena.push_back(this->muro);
-	Scena.push_back(this->piano);
+	Scena.push_back(&this->muro);
+	Scena.push_back(&this->piano);
 }
 
 
