@@ -73,7 +73,7 @@ void Agglomerato::build_cespuglio(GLuint matModel) {
 	}
 
 	this->set_init_position(matModel);
-	this->set_sceltaVS(1);
+	this->set_sceltaVS(3);
 }
 
 void Agglomerato::build_nuvola(GLuint matModel) {

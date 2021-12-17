@@ -22,16 +22,24 @@ public:
 	Mesh muro;
 	Mesh piano;
 
-	list<Agglomerato*> cespugli;
-	list<Agglomerato*> nuvole;
+	list<Agglomerato> cespugli;
+	list<Agglomerato> nuvole;
 
-	Agglomerato cespuglio;
 
 	World();
 
 	void build(GLuint matModel);
 	void upload_VA0_VB0();
 	void insert_in_scena();
+
+	void build_cespugli(GLuint matModel);
+	void upload_cespugli();
+	void insert_cespugli_in_scena();
+	void set_position_cespugli(float x, float y, float z);
+
+
+	void create_nuvole(GLuint matModel);
+	void create_cespugli(GLuint matModel);
 
 private:
 	void set_init_position(GLuint matModel);
@@ -51,7 +59,8 @@ World::World() {
 	this->muro = {};
 	this->piano = {};
 
-	this->cespuglio = {};
+	this->cespugli = {};
+	this->nuvole = {};
 }
 
 
@@ -93,7 +102,43 @@ void World::insert_in_scena() {
 	Scena.push_back(&this->piano);
 }
 
+void World::create_nuvole(GLuint matModel) {
 
+}
 
+void World::create_cespugli(GLuint matModel) {
+	//cespuglio.insert_in_scena();
+}
+
+void World::build_cespugli(GLuint matModel) {
+	for (int i = 0; i < 5; i++) {
+		Agglomerato cespuglio = {};
+		cespuglio.build_cespuglio(matModel);
+		this->cespugli.push_back(cespuglio);
+	}
+}
+
+void World::upload_cespugli() {
+	list <Agglomerato>::iterator it;
+	for (it = this->cespugli.begin(); it != this->cespugli.end(); ++it) {
+		it->upload_VA0_VB0();
+	}
+}
+
+void World::insert_cespugli_in_scena() {
+	list <Agglomerato>::iterator it;
+	for (it = this->cespugli.begin(); it != this->cespugli.end(); ++it) {
+		it->insert_in_scena();
+	}
+}
+
+void World::set_position_cespugli(float x, float y, float z) {
+	int step = 10;
+	list <Agglomerato>::iterator it;
+	for (it = this->cespugli.begin(); it != this->cespugli.end(); ++it) {
+		it->set_position(x + step, y, z - step);
+		step += 50;
+	}
+}
 
 #endif

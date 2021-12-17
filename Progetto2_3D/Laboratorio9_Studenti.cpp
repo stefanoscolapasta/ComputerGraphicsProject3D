@@ -87,11 +87,11 @@ void INIT_VAO(void)
 	world.upload_VA0_VB0();
 	world.insert_in_scena();
 	
+	world.build_cespugli(MatModel);
+	world.upload_cespugli();
+	world.insert_cespugli_in_scena();
 
-	world.cespuglio.build_nuvola(MatModel);
-	world.cespuglio.upload_VA0_VB0();
-	world.cespuglio.insert_in_scena();
-
+	world.set_position_cespugli(-100, 0, 300);
 }
 
 void modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
