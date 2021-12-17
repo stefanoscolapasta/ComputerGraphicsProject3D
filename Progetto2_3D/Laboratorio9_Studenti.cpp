@@ -12,6 +12,8 @@
 #include "Camera.h"
 #include "Menu.h"
 
+#include <ctime>
+
 #include FT_FREETYPE_H
 
 int width = 1900;
@@ -26,7 +28,7 @@ int idfg;
 vec3 asse = vec3(0.0, 1.0, 0.0);
  
 int selected_obj = -1;
-Mesh Cubo, Piano, Piramide, Centri, Sfera;
+Mesh Cubo, Tetto, Cofano, Ruota, Piano, Piramide, Centri, Sfera;
 Mesh cerchio, quadrato;
 
 vector<Material> materials;
@@ -60,6 +62,9 @@ enum {
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
+float deltaFrame = 0.0f;
+float lastTime = 0.0f;
+float factor = 1;
 
 float angolo = 0.0;
 
@@ -70,9 +75,33 @@ float angolo = 0.0;
 #define DW_R 4
 #define STR 5
 
-float roadWidth = 6;
+#define D_UP 0
+#define D_RIGHT 1 
+#define D_DOWN 2
+#define D_LEFT 3
 
-vector<vector<int>> road = {
+
+float period = 400; // 4 secondi
+
+int row = 0;
+int column = 0;
+
+struct {
+	float width;
+	vec3 position;
+} road = { 12, vec3(-6*12, 0, -6*12) };
+
+struct {
+	vec3 position;
+	int direction;
+	float velocity;
+	float rotation;
+} car = { vec3(road.width / 2, 0, road.width) + road.position, D_UP, ((2 * (float)PI) * (road.width / 2) / period) };
+
+
+
+
+vector<vector<int>> roadMatrix = {
 	{UP_L, STR, STR, UP_R, EMPTY, UP_L, STR, UP_R, EMPTY, UP_L, STR, UP_R},
 	{STR, EMPTY, EMPTY, DW_L, STR, DW_R, EMPTY, STR, EMPTY, STR, EMPTY, STR},
 	{STR, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, STR, EMPTY, STR, EMPTY, STR},
@@ -85,9 +114,77 @@ vector<vector<int>> road = {
 
 
 void update(int a) {
-	angolo += 0.1;
-	glutTimerFunc(10, update, 0);
+	/* Movement */
+	int slot = roadMatrix[row][column];
+	if ((slot == UP_L && car.direction == D_UP) || (slot == UP_R && car.direction == D_RIGHT)
+		|| (slot == DW_R && car.direction == D_DOWN) || (slot == DW_L && car.direction == D_LEFT))
+	{
+		vec3 velocity = -car.velocity * vec3(0, 0, 1);
+		car.rotation += 2 * PI / (period);
+		car.position += vec3(vec4(velocity, 0) * rotate(mat4(1), car.rotation, vec3(0, 1, 0)));
+	}
+	else if ((slot == UP_L && car.direction == D_LEFT) || (slot == UP_R && car.direction == D_UP)
+		|| (slot == DW_R && car.direction == D_RIGHT) || (slot == DW_L && car.direction == D_DOWN))
+	{
+		vec3 velocity = -car.velocity * vec3(0, 0, 1);
+		car.rotation -= 2 * PI / (period);
+		car.position += vec3(vec4(velocity, 0) * rotate(mat4(1), car.rotation, vec3(0, 1, 0)));
+	}
+	else if (roadMatrix[row][column] == STR) 
+	{
+		if (car.direction == D_RIGHT) {
+			car.position += car.velocity * vec3(1, 0, 0);
+		}
+		else if (car.direction == D_DOWN) {
+			car.position += car.velocity * vec3(0, 0, 1);
+		}
+		else if (car.direction == D_UP) {
+			car.position -= car.velocity * vec3(0, 0, 1);
+		}
+		else if (car.direction == D_LEFT) {
+			car.position -= car.velocity * vec3(1, 0, 0);
+		}
+	}
 
+	/**/
+	if (car.position.x >= road.position.x + (column + 1) * road.width) {
+		if (slot == UP_L && car.direction == D_UP || slot == DW_L && car.direction == D_DOWN) {
+			car.direction = D_RIGHT;
+			column++;
+		}
+		else if (slot == STR && car.direction == D_RIGHT) {
+			column++;
+		}
+	}
+	else if (car.position.x <= road.position.x + column * road.width) {
+		if (slot == UP_R && car.direction == D_UP || slot == DW_R && car.direction == D_DOWN) {
+			car.direction = D_LEFT;
+			column--;
+		}
+		else if (slot == STR && car.direction == D_LEFT) {
+			column--;
+		}
+	}
+	else if (car.position.z >= road.position.z + (row + 1) * road.width) {
+		if (slot == UP_R && car.direction == D_RIGHT || slot == UP_L && car.direction == D_LEFT) {
+			car.direction = D_DOWN;
+			row++;
+		}
+		else if (slot == STR && car.direction == D_DOWN) {
+			row++;
+		}
+	}
+	else if (car.position.z <= road.position.z + row * road.width) {
+		if (slot == DW_R && car.direction == D_RIGHT || slot == DW_L && car.direction == D_LEFT) {
+			car.direction = D_UP;
+			row--;
+		}
+		else if (slot == STR && car.direction == D_UP) {
+			row--;
+		}
+	}
+
+	glutTimerFunc(10, update, 0);
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
@@ -108,15 +205,21 @@ glm::vec3 getTrackBallPoint(float x, float y) {
 }
 void INIT_VAO(void)
 {
-
 	Mesh Sfondo, cappello, pon, testa, naso, corpo, braccio_s, braccio_d, occhio_s, occhio_d, Casa, Palo, Telo, bottone, collo, bocca;
 	Mesh mano_d, mano_s, piede_s, gamba_s, gambda_d, piede_d;
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
-
-	crea_curva(&cerchio, roadWidth);
+	crea_curva(&cerchio, road.width);
 	crea_VAO_Vector(&cerchio);
 	crea_piano(&quadrato);
 	crea_VAO_Vector(&quadrato);
+	crea_cubo(&Cubo, vec4(0, 0, 1, 1), vec4(0, 1, 1, 1));
+	crea_VAO_Vector(&Cubo);
+	crea_tetto_macchina(&Tetto, vec4(1, 0, 0, 1), vec4(1, 0, 0, 1));
+	crea_VAO_Vector(&Tetto);
+	crea_cofano(&Cofano);
+	crea_VAO_Vector(&Cofano);
+	crea_cilindro(&Ruota, vec4(0, 0, 0, 1));
+	crea_VAO_Vector(&Ruota);
 
 	//SFONDO
 	crea_piano_suddiviso(&Sfondo, vec4(0.9, 0.1, 0.9, 0.5));
@@ -162,151 +265,7 @@ void INIT_VAO(void)
 	Casa.material = MaterialType::EMERALD;
 	Scena.push_back(Casa);*/
 
-	//COSTRUZIONE DEL PERSONAGGI
-	//Testa Clown
-	/*crea_sfera(&testa,vec4(1.0,1.0,0.6,1.0));
-	crea_VAO_Vector(&testa);
-	testa.Model = mat4(1.0);
-	testa.Model = translate(testa.Model, vec3(0.0, 2.75, 0.0));
-	testa.Model = scale(testa.Model, vec3(0.75, 0.75, 0.75));
-	testa.nome = "Testa";
-	cx = testa.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	testa.sceltaVS = 0;
-	testa.material = MaterialType::RED_PLASTIC;
-	Scena.push_back(testa);
-	 
-	//OCCHIO SINISTRO
-	crea_sfera(&occhio_s, vec4(1.0, 1.0, 1.0, 1.0));
-	crea_VAO_Vector(&occhio_s);
-	occhio_s.Model = mat4(1.0);
-	occhio_s.Model = translate(occhio_s.Model, vec3(-0.4, 2.75, 0.8));
-	occhio_s.Model = scale(occhio_s.Model, vec3(0.25, 0.2, 0.15));
-	occhio_s.nome = "occhio sinistro";
-	cx = occhio_s.Model * vec4(0.0,0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	occhio_s.sceltaVS = 0;
-	raggi.push_back(0.5);
-	occhio_s.material = MaterialType::SLATE;
-	Scena.push_back(occhio_s);
-	  
-
-	//OCCHIO DESTRO
-	crea_sfera(&occhio_d, vec4(1.0, 1.0, 1.0, 1.0));
-	crea_VAO_Vector(&occhio_d);
-	occhio_d.Model = mat4(1.0);
-	occhio_d.Model = translate(occhio_d.Model, vec3(0.4, 2.75, 0.8));
-	occhio_d.Model = scale(occhio_d.Model, vec3(0.25, 0.2, 0.15));
-	occhio_d.nome = "Occhio destro";
-	cx = occhio_d.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_d.sceltaVS = 0;
-	occhio_d.material = MaterialType::SLATE;
-	Scena.push_back(occhio_d);
-
-	 
-	occhio_s.colori.clear();
-	occhio_s.vertici.clear();
-	occhio_s.indici.clear();
-
-	occhio_d.colori.clear();
-	occhio_d.vertici.clear();
-	occhio_d.indici.clear();
-
-	//Pupille
-	//OCCHIO SINISTRO
-	crea_sfera(&occhio_s, vec4(0.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&occhio_s);
-	occhio_s.Model = mat4(1.0);
-	occhio_s.Model = translate(occhio_s.Model, vec3(-0.4, 2.75, 0.9));
-	occhio_s.Model = scale(occhio_s.Model, vec3(0.1, 0.15, 0.05));
-	occhio_s.nome = "pupilla sinistra";
-	cx = occhio_s.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_s.sceltaVS = 0;
-	occhio_s.material = MaterialType::SLATE;
-	Scena.push_back(occhio_s);
-
-	//Pupille
-	//OCCHIO DESTRO
-	crea_sfera(&occhio_d, vec4(0.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&occhio_d);
-	occhio_d.Model = mat4(1.0);
-	occhio_d.Model = translate(occhio_d.Model, vec3(0.4, 2.75, 0.9));
-	occhio_d.Model = scale(occhio_d.Model, vec3(0.1, 0.15, 0.05));
-	occhio_d.nome = "Pupilla destra";
-	cx = occhio_d.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	occhio_d.sceltaVS = 0;
-	occhio_d.material = MaterialType::SLATE;
-	Scena.push_back(occhio_d);
-
-
-
-	//NASO
-	crea_sfera(&naso, vec4(1.0, 0.0, 1.0, 1.0));
-	crea_VAO_Vector(&naso);
-	naso.Model = mat4(1.0);
-	naso.Model = translate(naso.Model, vec3(0.0, 2.6, 0.4));
-	naso.Model = scale(naso.Model, vec3(0.2, 0.2, 0.6));
-	cx = naso.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	naso.nome = "naso";
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	naso.sceltaVS = 0;
-	naso.material = MaterialType::SLATE;
-	Scena.push_back(naso);
-
-
-	//Bocca
-	crea_sfera(&bocca, vec4(1.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&bocca);
-	bocca.Model = mat4(1.0);
-	bocca.Model = translate(bocca.Model, vec3(0.0, 2.2, 0.4));
-	bocca.Model = scale(bocca.Model, vec3(0.4, 0.1, 0.2));
-	bocca.nome = "bocca";
-	cx = bocca.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	bocca.sceltaVS = 0;
-	bocca.material = MaterialType::SLATE;
-	Scena.push_back(bocca);
 	
-	//Palo
-	crea_cilindro(&Palo, vec4(1.0, 0.0, 0.0, 1.0));
-	crea_VAO_Vector(&Palo);
-	Palo.Model = mat4(1.0);
-	Palo.Model = translate(Palo.Model, vec3(28.0, -2.5, 0.0));
-	Palo.Model = scale(Palo.Model, vec3(0.1f, 10.0f, 0.1f));
-	Palo.nome = "Palo";
-	
-	cx = Palo.Model * vec4(0.0, 1.0, 0.0, 1.0);
-	centri.push_back(cx);
-	raggi.push_back(0.5);
-	Palo.sceltaVS = 0;
-	Palo.material = MaterialType::SLATE;
-	Scena.push_back(Palo);
- 
-	//Telo
-	crea_piano_suddiviso(&Telo, vec4(0.8, 0.2, 0.9, 1.0));
-	crea_VAO_Vector(&Telo);
-	Telo.nome = "Telo";
-	Telo.Model = mat4(1.0);
-	Telo.Model = translate(Telo.Model, vec3(30.0, 6.0, 0.0));
-	Telo.Model = scale(Telo.Model, vec3(4.0f, 3.0f, 1.0f));
-	Telo.Model = rotate(Telo.Model, radians(90.0f), vec3(1.0, 0.0, 0.0));
-	cx = Telo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	 
-	centri.push_back(cx);
-	raggi.push_back(1.5);
-	Telo.sceltaVS = 0;
-	Telo.material = MaterialType::SLATE;
-	Scena.push_back(Telo);
-	*/
 }
 
 void modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor)
@@ -586,67 +545,93 @@ void drawScene(void)
 		glBindVertexArray(Scena[k].VAO);
 		glDrawElements(GL_TRIANGLES, (Scena[k].indici.size()-1)*sizeof(GLuint), GL_UNSIGNED_INT, 0);
  		int ind = Scena[k].indici.size() - 1;
-		//Disegno il centro della mesh: un punto in quella posizione
-	    //glDrawElements(GL_POINTS, 1,GL_UNSIGNED_INT, BUFFER_OFFSET(ind*sizeof(GLuint)));
 		glBindVertexArray(0);
 	}
 
-	/*cerchio.Model = mat4(1);
-	cerchio.Model = translate(cerchio.Model, vec3(0, 0, 0));
-	cerchio.Model = rotate(cerchio.Model, radians(-90.f), vec3(1, 0, 0));
-	cerchio.Model = scale(cerchio.Model, vec3(1, 1, 1));
-	glBindVertexArray(cerchio.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
-	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
-	*/
-	/*cerchio.Model = mat4(1);
-	cerchio.Model = translate(cerchio.Model, vec3(0, 0, 0));
-	cerchio.Model = scale(cerchio.Model, vec3(1, 1, 1));
-	glBindVertexArray(cerchio.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
-	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	Cubo.Model = mat4(1);
+	Cubo.Model = translate(Cubo.Model, car.position);
+	Cubo.Model = rotate(Cubo.Model, -car.rotation, vec3(0, 1, 0));
+	Cubo.Model = translate(Cubo.Model, vec3(0, 1.1, 0));
+	Cubo.Model = scale(Cubo.Model, vec3(2, 0.1, 4));
+	glBindVertexArray(Cubo.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cubo.Model));
+	glDrawElements(GL_TRIANGLES, (Cubo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	cerchio.Model = mat4(1);
-	cerchio.Model = translate(cerchio.Model, vec3(2+roadWidth, 0, 0));
-	cerchio.Model = scale(cerchio.Model, vec3(-1, 1, 1));
-	glBindVertexArray(cerchio.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
-	glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+	Tetto.Model = mat4(1);
+	Tetto.Model = translate(Tetto.Model, car.position);
+	Tetto.Model = rotate(Tetto.Model, -car.rotation, vec3(0, 1, 0));
+	Tetto.Model = translate(Tetto.Model, vec3(0, 1.9, 1));
+	Tetto.Model = scale(Tetto.Model, vec3(2, 0.8, 3));
+	glBindVertexArray(Tetto.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Tetto.Model));
+	glDrawElements(GL_TRIANGLES, (Tetto.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	/*quadrato.Model = mat4(1);
-	glBindVertexArray(quadrato.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
-	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+	Cofano.Model = mat4(1);
+	Cofano.Model = translate(Cofano.Model, car.position);
+	Cofano.Model = rotate(Cofano.Model, -car.rotation, vec3(0, 1, 0));
+	Cofano.Model = translate(Cofano.Model, vec3(0, 1.2, -3));
+	Cofano.Model = scale(Cofano.Model, vec3(2, 1, 1));
+	glBindVertexArray(Cofano.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cofano.Model));
+	glDrawElements(GL_TRIANGLES, (Cofano.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	/*quadrato.Model = mat4(1);
-	quadrato.Model = translate(quadrato.Model, vec3(0, 0, -2));
-	glBindVertexArray(quadrato.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
-	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, -3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	quadrato.Model = mat4(1);
-	quadrato.Model = translate(quadrato.Model, vec3(2, 0, 0));
-	glBindVertexArray(quadrato.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
-	glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);*/
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(2, 0.5, -3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, 3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+	Ruota.Model = mat4(1);
+	Ruota.Model = translate(Ruota.Model, car.position);
+	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
+	Ruota.Model = translate(Ruota.Model, vec3(2, 0.5, 3));
+	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
+	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
+	glBindVertexArray(Ruota.VAO);
+	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
+	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 	
-	for (int i = 0; i < road.size(); i++) {
-		for (int j = 0; j < road[i].size(); j++) {
-			mat4 modellation = translate(mat4(1), vec3(j * roadWidth, 0, (i + 1) * roadWidth));
-			if (road[i][j] >= UP_R && road[i][j] <= DW_R) {
+	for (int i = 0; i < roadMatrix.size(); i++) {
+		for (int j = 0; j < roadMatrix[i].size(); j++) {
+			mat4 modellation = translate(mat4(1), road.position + vec3(j * road.width, 0, (i + 1) * road.width));
+			if (roadMatrix[i][j] >= UP_R && roadMatrix[i][j] <= DW_R) {
 				cerchio.Model = modellation;
-				switch (road[i][j])
+				switch (roadMatrix[i][j])
 				{
 				case UP_L:
-					cerchio.Model = translate(cerchio.Model, vec3(roadWidth, 0, 0));
+					cerchio.Model = translate(cerchio.Model, vec3(road.width, 0, 0));
 					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, 1));
 					break;
 				case DW_L:
-					cerchio.Model = translate(cerchio.Model, vec3(roadWidth, 0, -roadWidth));
+					cerchio.Model = translate(cerchio.Model, vec3(road.width, 0, -road.width));
 					cerchio.Model = scale(cerchio.Model, vec3(-1, 1, -1));
 					break;
 				case DW_R:
-					cerchio.Model = translate(cerchio.Model, vec3(0, 0, -roadWidth));
+					cerchio.Model = translate(cerchio.Model, vec3(0, 0, -road.width));
 					cerchio.Model = scale(cerchio.Model, vec3(1, 1, -1));
 					break;
 				default:
@@ -654,15 +639,13 @@ void drawScene(void)
 				}
 				glBindVertexArray(cerchio.VAO);
 				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(cerchio.Model));
-				//glDrawArrays(GL_TRIANGLE_FAN, 0, cerchio.vertici.size());
 				glDrawElements(GL_TRIANGLES, (cerchio.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
-			} else if (road[i][j] == STR) {
+			} else if (roadMatrix[i][j] == STR) {
 				quadrato.Model = modellation;
-				quadrato.Model = translate(quadrato.Model, vec3(roadWidth/2, 0, -roadWidth/2));
-				quadrato.Model = scale(quadrato.Model, vec3(roadWidth/2, 1, roadWidth/2));
+				quadrato.Model = translate(quadrato.Model, vec3(road.width/2, 0, -road.width/2));
+				quadrato.Model = scale(quadrato.Model, vec3(road.width/2, 1, road.width/2));
 				glBindVertexArray(quadrato.VAO);
 				glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(quadrato.Model));
-				//glDrawArrays(GL_TRIANGLE_STRIP, 0, quadrato.vertici.size());
 				glDrawElements(GL_TRIANGLES, (quadrato.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 			}
 		}
@@ -715,7 +698,7 @@ int main(int argc, char* argv[])
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboardPressedEvent);
 	glutSpecialFunc(SpecialInput);
-	glutTimerFunc(10, update, 0);
+	glutTimerFunc(2000, update, 0);
 	glutMotionFunc(mouseActiveMotion); // Evento tasto premuto
 	
 	glewExperimental = GL_TRUE;

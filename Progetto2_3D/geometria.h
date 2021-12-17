@@ -12,4 +12,6 @@ void crea_toro(Mesh* mesh, vec4 colore);
 void crea_cono(Mesh* mesh, vec4 colore);
 void crea_casa(Mesh* mesh, vec4 coloret, vec4 coloreb);
 void crea_curva(Mesh* mesh, int raggio);
+void crea_tetto_macchina(Mesh* mesh, vec4 coloret, vec4 coloreb);
+void crea_cofano(Mesh* mesh);
 

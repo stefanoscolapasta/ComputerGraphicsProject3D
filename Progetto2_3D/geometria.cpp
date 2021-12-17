@@ -5,7 +5,6 @@
 
 void crea_cubo(Mesh* mesh, vec4 coloret, vec4 coloreb)
 {
-
 	mesh->vertici.push_back(vec3(-1.0, -1.0, 1.0));
 	mesh->colori.push_back(coloret);
 	mesh->vertici.push_back(vec3(1.0, -1.0, 1.0));
@@ -43,6 +42,45 @@ void crea_cubo(Mesh* mesh, vec4 coloret, vec4 coloreb)
  
 	mesh->indici.push_back(nv-1);
 }
+
+void crea_tetto_macchina(Mesh* mesh, vec4 coloret, vec4 coloreb) {
+	mesh->vertici.push_back(vec3(-1.0, -1.0, 1.0));
+	mesh->colori.push_back(coloret);
+	mesh->vertici.push_back(vec3(1.0, -1.0, 1.0));
+	mesh->colori.push_back(coloret);
+	mesh->vertici.push_back(vec3(0.8, 1.0, 0.9));
+	mesh->colori.push_back(coloret);
+	mesh->vertici.push_back(vec3(-0.8, 1.0, 0.9));
+	mesh->colori.push_back(coloret);
+	// back
+	mesh->vertici.push_back(vec3(-1.0, -1.0, -1.0));
+	mesh->colori.push_back(coloreb);
+	mesh->vertici.push_back(vec3(1.0, -1.0, -1.0));
+	mesh->colori.push_back(coloreb);
+	mesh->vertici.push_back(vec3(0.8, 1.0, -0.7));
+	mesh->colori.push_back(coloreb);
+	mesh->vertici.push_back(vec3(-0.8, 1.0, -0.7));
+	mesh->colori.push_back(coloreb);
+
+	mesh->vertici.push_back(vec3(1.0, 1.0, 1.0));
+	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
+
+	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(2);
+	mesh->indici.push_back(2); mesh->indici.push_back(3); mesh->indici.push_back(0);
+	mesh->indici.push_back(1); mesh->indici.push_back(5); mesh->indici.push_back(6);
+	mesh->indici.push_back(6); mesh->indici.push_back(2); mesh->indici.push_back(1);
+	mesh->indici.push_back(7); mesh->indici.push_back(6); mesh->indici.push_back(5);
+	mesh->indici.push_back(5); mesh->indici.push_back(4); mesh->indici.push_back(7);
+	mesh->indici.push_back(4); mesh->indici.push_back(0); mesh->indici.push_back(3);
+	mesh->indici.push_back(3); mesh->indici.push_back(7); mesh->indici.push_back(4);
+	mesh->indici.push_back(4); mesh->indici.push_back(5); mesh->indici.push_back(1);
+	mesh->indici.push_back(1); mesh->indici.push_back(0); mesh->indici.push_back(4);
+	mesh->indici.push_back(3); mesh->indici.push_back(2); mesh->indici.push_back(6);
+	mesh->indici.push_back(6); mesh->indici.push_back(7); mesh->indici.push_back(3);
+	int nv = mesh->vertici.size();
+
+	mesh->indici.push_back(nv - 1);
+}
 void crea_piramide(Mesh* mesh)
 {
 	mesh->vertici.push_back(vec3(-1.0, 0.0, 1.0));
@@ -67,6 +105,37 @@ void crea_piramide(Mesh* mesh)
 	mesh->indici.push_back(1); mesh->indici.push_back(2); mesh->indici.push_back(4);
 
 	mesh->vertici.push_back(vec3(0.0,0.0, 0.0));
+	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
+
+	int nv = mesh->vertici.size();
+	mesh->indici.push_back(nv - 1);
+
+}
+
+void crea_cofano(Mesh* mesh)
+{
+	mesh->vertici.push_back(vec3(-1.0, 0.0, 1.0));
+	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+	mesh->vertici.push_back(vec3(1.0, 0.0, 1.0));
+	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+	mesh->vertici.push_back(vec3(1.0, 0.0, -1.0));
+	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+	mesh->vertici.push_back(vec3(-1.0, 0.0, -1.0));
+	mesh->colori.push_back(vec4(1.0, 0.0, 0.0, 1));
+	// Apice piramide
+	mesh->vertici.push_back(vec3(0.0, 1.0, 1.7));
+	mesh->colori.push_back(vec4(1.0, 1.0, 1.0, 1.0));
+
+	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(2);
+	mesh->indici.push_back(0); mesh->indici.push_back(2); mesh->indici.push_back(3);
+
+	mesh->indici.push_back(0); mesh->indici.push_back(4); mesh->indici.push_back(3);
+	mesh->indici.push_back(0); mesh->indici.push_back(1); mesh->indici.push_back(4);
+
+	mesh->indici.push_back(3); mesh->indici.push_back(2); mesh->indici.push_back(4);
+	mesh->indici.push_back(1); mesh->indici.push_back(2); mesh->indici.push_back(4);
+
+	mesh->vertici.push_back(vec3(0.0, 0.0, 0.0));
 	mesh->colori.push_back(vec4(0.0, 1.0, 0.0, 1.0));
 
 	int nv = mesh->vertici.size();
@@ -286,6 +355,7 @@ void crea_cono(Mesh* mesh, vec4 colore)
 	int nv = mesh->vertici.size();
 	mesh->indici.push_back(nv - 1);
 }
+
 void crea_cilindro(Mesh* mesh, vec4 colore)
 {
 	int Stacks = 30;  //numero di suddivisioni sull'asse x
@@ -325,10 +395,24 @@ void crea_cilindro(Mesh* mesh, vec4 colore)
 		mesh->indici.push_back(i + 1);
 	}
 
+	mesh->vertici.push_back(vec3(0.0, 0.0, 0.0));
+	mesh->colori.push_back(colore);
+
 	mesh->vertici.push_back(vec3(0.0, 1.0, 0.0));
-	mesh->colori.push_back(vec4(0.0, 1.0, 0.0,1.0));
+	mesh->colori.push_back(colore);
+
 	int nv = mesh->vertici.size();
-	mesh->indici.push_back(nv - 1);
+
+	/* Attenzinion il +2 funziona ma è sospetto */
+	for (int i = 0; i < Slices+2; i++) {
+		mesh->indici.push_back(i + 1);
+		mesh->indici.push_back(i);
+		mesh->indici.push_back(nv - 2);
+
+		mesh->indici.push_back(Stacks * Slices + i + 1);
+		mesh->indici.push_back(Stacks * Slices + i);
+		mesh->indici.push_back(nv - 1);
+	}
 }
 
 

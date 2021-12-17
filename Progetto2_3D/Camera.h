@@ -3,8 +3,6 @@
 #include "Lib.h"
 #include "Strutture.h"
 
-
-
 #ifndef CAMERA_H
 #define CAMERA_H
 
@@ -65,16 +63,22 @@ void SpecialInput(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		walkCameraForward();
+		//walkCameraForward();
+		//position -= velocity;
 		break;
 	case GLUT_KEY_DOWN:
-		walkCameraBack();
+		//walkCameraBack();
+		//position += velocity;
 		break;
 	case GLUT_KEY_LEFT:
-		//do something here
+		//position.x -= 0.1;
+		//rotationAngle += 0.1;
+		//velocity = vec3(vec4(velocity, 0) * rotate(mat4(1), -0.1f, vec3(0, 1, 0)));
 		break;
 	case GLUT_KEY_RIGHT:
-		//do something here
+		//position.x += 0.1;
+		//rotationAngle -= 0.1;
+		//velocity = vec3(vec4(velocity, 0) * rotate(mat4(1), 0.1f, vec3(0, 1, 0)));
 		break;
 	}
 	glutPostRedisplay();
