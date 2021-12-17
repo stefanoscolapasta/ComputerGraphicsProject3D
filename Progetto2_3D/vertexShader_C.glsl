@@ -40,6 +40,7 @@ void main() {
 
     if (sceltaVs == 0) {
            gl_Position = Projection*View*Model*vec4(aPos, 1.0);
+           ourColor = aColor;
     }
     else if (sceltaVs == 1) {
         gl_Position = Projection * View * Model * vec4(aPos, 1.0);
