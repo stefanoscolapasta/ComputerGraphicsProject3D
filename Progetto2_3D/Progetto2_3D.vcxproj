@@ -164,7 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragmentShader_C.glsl" />
-    <None Include="fragmentShader_Sfondo_C.glsl" />
     <None Include="packages.config" />
     <None Include="vertexShader_C.glsl" />
   </ItemGroup>

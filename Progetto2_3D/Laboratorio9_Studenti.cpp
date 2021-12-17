@@ -13,14 +13,26 @@
 #include "cespuglio.h"
 #include "TransformMesh.h"
 #include "DrawMesh.h"
+#include "Strutture.h"
 
 #include FT_FREETYPE_H
 
-int width = 1024;
-int height = 800;
+enum {
+	NAVIGATION,
+	CAMERA_MOVING,
+	TRASLATING,
+	ROTATING,
+	SCALING
+} OperationMode;
 
-int w_up = width;
-int h_up = height;
+enum {
+	X,
+	Y,
+	Z
+} WorkingAxis;
+
+
+World world = World();
 
 string Operazione;
 int idfg;
@@ -46,18 +58,6 @@ static int last_mouse_pos_X;
 
 
 mat4 Projection, Model, View;
-enum {
-	NAVIGATION,
-	CAMERA_MOVING,
-	TRASLATING,
-	ROTATING,
-	SCALING
-} OperationMode;
-enum {
-	X,
-	Y,
-	Z
-} WorkingAxis;
 
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
@@ -79,8 +79,8 @@ glm::vec3 getTrackBallPoint(float x, float y) {
 	float zTemp;
 	glm::vec3 point;
 	//map to [-1;1]
-	point.x = (2.0f * x - width) / width;
-	point.y = (height - 2.0f * y) / height;
+	point.x = (2.0f * x - world.width) / world.width;
+	point.y = (world.height - 2.0f * y) / world.height;
 
 	//Cooordinata z del punto di coordinate (x,y,z) che si muove sulla sfera virtuale con centro (0,0,0) e raggio r=1
 	zTemp = 1.0f - pow(point.x, 2.0) - pow(point.y, 2.0);
@@ -106,11 +106,13 @@ void INIT_VAO(void)
 	crea_piano_suddiviso(&Sfondo, vec4(0.2, 0.2, 0.9, 0.5));
 	crea_VAO_Vector(&Sfondo);
 	Sfondo.nome = "Sfondo";
-	Sfondo.Model = mat4(1.0);
-	Sfondo.Model = translate(Sfondo.Model, vec3(0.0, 0.0, -100.0));
-	
-	Sfondo.Model = scale(Sfondo.Model, vec3(1000.0f, 1000.00f, 1.0f));
-	Sfondo.Model = rotate(Sfondo.Model, radians(90.0f), vec3(1.0, 0.0, 0.0));
+
+	set_transform_values(&Sfondo, 
+		0.0f, 0.0f, -100.0f,
+		1000.0f, 1000.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 90.0f);
+	modify(&Sfondo, MatModel);
+
 	vec3 cx = Sfondo.Model * vec4(0.0, 0.0, 0.0, 1.0);
 	centri.push_back(cx);
 	raggi.push_back(0.5);
@@ -122,10 +124,12 @@ void INIT_VAO(void)
 	crea_piano_suddiviso(&Piano, vec4(0.9, 0.9, 0.9, 0.5));
 	crea_VAO_Vector(&Piano);
 	Piano.nome = "Piano Terra";
-	Piano.Model = mat4(1.0);
-	Piano.Model = translate(Piano.Model, vec3(0.0, -4.5, 0.0));
-	
-	Piano.Model = scale(Piano.Model, vec3(1000.0f, 1.0f, 1000.0f));
+
+	set_transform_values(&Piano,
+		0.0f, -4.5f, 0.0f,
+		1000.0f, 1.0f, 1000.0f,
+		0.0f, 0.0f, 1.0f, 0.0f);
+	modify(&Piano, MatModel);
 	cx = Piano.Model * vec4(0.0, 0.0, 0.0, 1.0);
 	centri.push_back(cx);
 	raggi.push_back(0.5);
@@ -147,7 +151,7 @@ void INIT_VAO(void)
 	Casa.material = MaterialType::EMERALD;
 	//Scena.push_back(Casa);
 	
-	crea_sfera(&foglia, vec4(1.0, 0.0, 0.0, 1.0));
+	crea_sfera(&foglia, vec4(0.2, 1.0, 0.2, 1.0));
 	crea_VAO_Vector(&foglia);
 	foglia.nome = "Casa";
 
@@ -159,63 +163,9 @@ void INIT_VAO(void)
 	cx = foglia.Model * vec4(-1.5, 3.5, 0.0, 1.0);
 	centri.push_back(vec3(cx));
 	raggi.push_back(0.5);
-	foglia.sceltaVS = 0;
+	foglia.sceltaVS = 1;
 	foglia.material = MaterialType::EMERALD;
 	Scena.push_back(foglia);
-
-	//crea_sfera(&corpo, vec4(0.0, 1.0, 0.0, 1.0));
-	//crea_VAO_Vector(&corpo);
-	//corpo.Model = mat4(1.0);
-	//corpo.Model = translate(corpo.Model, vec3(0.0, 0.3, 0.0));
-	//corpo.Model = scale(corpo.Model, vec3(1.4, 1.6, 1.0));
-	//raggi.push_back(0.5);
-	//corpo.nome = "Corpo";
-	//corpo.material = MaterialType::EMERALD;
-	//cx = corpo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	//centri.push_back(cx);
-	//corpo.sceltaVS = 0;
-
-	//Scena.push_back(corpo);
-
-
-	//Scena.push_back(cespuglio.foglia);
-
-	//list<Mesh>::iterator it;
-	//for (it = cespuglio.cespuglio.begin(); it != cespuglio.cespuglio.end(); ++it) {
-	//	Scena.push_back((*it));
-	//}
-
-
-	//crea_sfera(&corpo, vec4(0.0, 1.0, 0.0, 1.0));
-	//crea_VAO_Vector(&corpo);
-	//corpo.Model = mat4(1.0);
-	//corpo.Model = translate(corpo.Model, vec3(0.0, 0.3, 0.0));
-	//corpo.Model = scale(corpo.Model, vec3(1.4, 1.6, 1.0));
-	//raggi.push_back(0.5);
-	//corpo.nome = "Corpo";
-	//corpo.material = MaterialType::EMERALD;
-	//cx = corpo.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	//centri.push_back(cx);
-	//corpo.sceltaVS = 0;
-
-	//Scena.push_back(corpo);
-
-
-	//COSTRUZIONE DEL PERSONAGGI
-	// 
-	//Testa Clown
-	//crea_sfera(&cespuglio,vec4(1.0,1.0,0.6,1.0));
-	//crea_VAO_Vector(&cespuglio);
-	//cespuglio.Model = mat4(1.0);
-	//cespuglio.Model = translate(cespuglio.Model, vec3(0.0, 2.75, 0.0));
-	//cespuglio.Model = scale(cespuglio.Model, vec3(0.75, 0.75, 0.75));
-	//cespuglio.nome = "Testa";
-	//cx = cespuglio.Model * vec4(0.0, 0.0, 0.0, 1.0);
-	//centri.push_back(cx);
-	//raggi.push_back(0.5);
-	//cespuglio.sceltaVS = 0;
-	//cespuglio.material = MaterialType::RED_PLASTIC;
-	//Scena.push_back(cespuglio);
 
 }
 
@@ -310,9 +260,9 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 }
 
 vec3 get_ray_from_mouse(float mouse_x, float mouse_y) {
-	// mappiamo le coordinate di viewport del mouse [0,width], [height,0] in coordinate normalizzate [-1,1]  
-	float x = (2.0f * mouse_x) / width - 1.0;
-	float y = 1.0f - (2.0f * mouse_y) / height;
+	// mappiamo le coordinate di viewport del mouse [0,world.width], [world.height,0] in coordinate normalizzate [-1,1]  
+	float x = (2.0f * mouse_x) / world.width - 1.0;
+	float y = 1.0f - (2.0f * mouse_y) / world.height;
 	float z = 1.0f;
 	vec3  ray_nds = vec3(x, y, z);
 
@@ -445,8 +395,8 @@ void resize(int w, int h)
 	glViewport(0, 0, w, h);
 	PerspectiveSetup.aspect = (GLfloat)w / (GLfloat)h;
 	Projection = perspective(radians(PerspectiveSetup.fovY), PerspectiveSetup.aspect, PerspectiveSetup.near_plane, PerspectiveSetup.far_plane);
-	w_up = w;
-	h_up = h;
+	world.w_up = w;
+	world.h_up = h;
 }
 
 void drawScene(void)
@@ -483,23 +433,15 @@ void drawScene(void)
 
 
 	/* ! CUORE !*/
-	for (int k =0; k <Scena.size(); k++) {
-		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Scena[k].Model));
-		glUniform1i(lscelta, Scena[k].sceltaVS);
 
-		//define_light_mesh_material(&Scena[k], &light_unif);
-		
+	for (int k =0; k <Scena.size(); k++) {
 		glUniform3fv(light_unif.material_ambient, 1, glm::value_ptr(materials[Scena[k].material].ambient));
 		glUniform3fv(light_unif.material_diffuse, 1, glm::value_ptr(materials[Scena[k].material].diffuse));
 		glUniform3fv(light_unif.material_specular, 1, glm::value_ptr(materials[Scena[k].material].specular));
 		glUniform1f(light_unif.material_shininess, materials[Scena[k].material].shininess);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, glm::value_ptr(Scena[k].Model));
 
-		glBindVertexArray(Scena[k].VAO);
-		glDrawElements(GL_TRIANGLES, (Scena[k].indici.size()-1)*sizeof(GLuint), GL_UNSIGNED_INT, 0);
- 		int ind = Scena[k].indici.size() - 1;
-		//Disegno il centro della mesh: un punto in quella posizione
-	    //glDrawElements(GL_POINTS, 1,GL_UNSIGNED_INT, BUFFER_OFFSET(ind*sizeof(GLuint)));
-		glBindVertexArray(0);
+		draw_mesh(&Scena[k], GL_TRIANGLES, MatModel);
 	}
 	glutSwapBuffers();
 }
@@ -541,7 +483,7 @@ int main(int argc, char* argv[])
 
 
 	//Inizializzo finestra per il rendering della scena 3d con tutti i suoi eventi le sue inizializzazioni e le sue impostazioni
-	glutInitWindowSize(width, height);
+	glutInitWindowSize(world.width, world.height);
 	glutInitWindowPosition(100, 100);
 	idfg = glutCreateWindow("Scena 3D");
 	glutDisplayFunc(drawScene);
@@ -559,7 +501,7 @@ int main(int argc, char* argv[])
 	INIT_Illuminazione(&light, materials, shaders);
 
 	buildOpenGLMenu();
-	INIT_CAMERA_PROJECTION(width, height);
+	INIT_CAMERA_PROJECTION(world.width, world.height);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_ALPHA_TEST);

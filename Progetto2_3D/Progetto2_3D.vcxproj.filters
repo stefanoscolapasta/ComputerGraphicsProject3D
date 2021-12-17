@@ -80,9 +80,6 @@
     <None Include="fragmentShader_C.glsl">
       <Filter>File di risorse</Filter>
     </None>
-    <None Include="fragmentShader_Sfondo_C.glsl">
-      <Filter>File di risorse</Filter>
-    </None>
     <None Include="vertexShader_C.glsl">
       <Filter>File di risorse</Filter>
     </None>

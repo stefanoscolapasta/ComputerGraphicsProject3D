@@ -3,8 +3,7 @@
 #include "Lib.h"
 #include "TransformMesh.h"
 #include "GestioneTesto.h"
-#include FT_FREETYPE_H
-#include <glm/glm.hpp>
+using namespace glm;
 
 #ifndef DRAW_MESH_H
 #define DRAW_MESH_H
@@ -18,19 +17,13 @@ void define_light_position_and_intensity(LightShaderUniform* light_unif, point_l
 }
 
 
-void define_light_mesh_material(Mesh* mesh, LightShaderUniform* light_unif) {
-	glUniform3fv(light_unif->material_ambient, 1, glm::value_ptr(materials[mesh->material].ambient));
-	glUniform3fv(light_unif->material_diffuse, 1, glm::value_ptr(materials[mesh->material].diffuse));
-	glUniform3fv(light_unif->material_specular, 1, glm::value_ptr(materials[mesh->material].specular));
-	glUniform1f(light_unif->material_shininess, materials[mesh->material].shininess);
-}
 
 
-void draw(Mesh* mesh, int typeDraw, GLuint matModel) {
+void draw_mesh(Mesh* mesh, int typeDraw, GLuint matModel) {
+	glUniform1i(lscelta, mesh->sceltaVS);
 	glBindVertexArray(mesh->VAO);
-	modify(mesh, matModel);
-	glUniformMatrix4fv(matModel, 1, GL_FALSE, value_ptr(mesh->Model));
-	glDrawElements(typeDraw, ((*mesh).indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	modify(mesh, MatModel);
+	glDrawElements(GL_TRIANGLES, (mesh->indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
