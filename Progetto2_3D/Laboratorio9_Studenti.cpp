@@ -149,10 +149,22 @@ vec3 calculateDirectionVecFromInt(int dir) {
 	}
 }
 
-
+float x = 0.05, y = 0.05f, z = 0.01;
+int i = 0;
 
 void update(int a) {
+	world.translate_nuvole(x, y, z);
+	i++;
 
+	if (i % 100) {
+		y = -y;
+	}
+
+	if (i == 500) {
+		i = 0;
+		x = -x;
+		z = -z;
+	}
 
 	world.lights[0].position = calculateObjectVerticesBarycenter(&Sole);
 	/* Positione del sole */
@@ -285,7 +297,12 @@ void INIT_VAO(void)
 	world.build_cespugli(MatModel);
 	world.upload_cespugli();
 	world.insert_cespugli_in_scena();
-	world.set_Init_Position_Cespugli();
+	world.set_init_position_cespugli();
+
+	world.build_nuvole(MatModel);
+	world.upload_nuvole();
+	world.insert_nuvole_in_scena();
+	world.set_init_position_nuvole();
 
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 	crea_curva(&cerchio, road.width);

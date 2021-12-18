@@ -32,7 +32,7 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 
 
 
-	materials.resize(7);
+	materials.resize(8);
 
 	materials[MaterialType::RED_PLASTIC].name = "Red Plastic";
 	materials[MaterialType::RED_PLASTIC].ambient = red_plastic_ambient;
@@ -75,7 +75,15 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 	materials[MaterialType::BLACK_RUBBER].ambient = glm::vec3(0.02, 0.02, 0.02);
 	materials[MaterialType::BLACK_RUBBER].diffuse = glm::vec3(0.02, 0.01, 0.01);
 	materials[MaterialType::BLACK_RUBBER].specular = glm::vec3(0.4, 0.4, 0.4);
-	materials[MaterialType::BLACK_RUBBER].shininess = .078125f;
+	materials[MaterialType::BLACK_RUBBER].shininess = .078125f;	
+	
+	// NUVOLA
+	materials[MaterialType::NUVOLA].name = "NUVOLA";
+	materials[MaterialType::NUVOLA].ambient = nuvola_ambient;
+	materials[MaterialType::NUVOLA].diffuse = nuvola_diffuse;
+	materials[MaterialType::NUVOLA].specular = nuvola_specular;
+	materials[MaterialType::NUVOLA].shininess = nuvola_shininess;
+
 
 	//Setup degli shader
 	shaders.resize(5);
