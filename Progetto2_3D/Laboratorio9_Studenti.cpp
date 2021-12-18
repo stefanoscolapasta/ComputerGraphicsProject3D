@@ -285,7 +285,7 @@ void INIT_VAO(void)
 	world.build_cespugli(MatModel);
 	world.upload_cespugli();
 	world.insert_cespugli_in_scena();
-	world.setInitPositionCespugli();
+	world.set_Init_Position_Cespugli();
 
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 	crea_curva(&cerchio, road.width);
@@ -750,33 +750,6 @@ void drawScene(void)
 	glutSwapBuffers();
 }
 
-void buildOpenGLMenu()
-{ 
-	int materialSubMenu = glutCreateMenu(material_menu_function);
-
-    glutAddMenuEntry(materials[MaterialType::EMERALD].name.c_str(), MaterialType::EMERALD);
-	glutAddMenuEntry(materials[MaterialType::BRASS].name.c_str(), MaterialType::BRASS);
-	glutAddMenuEntry(materials[MaterialType::SLATE].name.c_str(), MaterialType::SLATE);
-	glutAddMenuEntry(materials[MaterialType::YELLOW].name.c_str(), MaterialType::YELLOW);
-	
-	int shaderSubMenu = glutCreateMenu(shader_menu_function);
-	glutAddMenuEntry(shaders[ShaderOption::NONE].name.c_str(), ShaderOption::NONE);
-	glutAddMenuEntry(shaders[ShaderOption::GOURAD_SHADING].name.c_str(), ShaderOption::GOURAD_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::PHONG_SHADING].name.c_str(), ShaderOption::PHONG_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::ONDE_SHADING].name.c_str(), ShaderOption::ONDE_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::BANDIERA_SHADING].name.c_str(), ShaderOption::BANDIERA_SHADING);
-	
-	 
-	glutCreateMenu(main_menu_func); // richiama main_menu_func() alla selezione di una voce menu
-	glutAddMenuEntry("Opzioni", -1); //-1 significa che non si vuole gestire questa riga
-	glutAddMenuEntry("", -1);
-	glutAddMenuEntry("Wireframe", MenuOption::WIRE_FRAME);
-	glutAddMenuEntry("Face fill", MenuOption::FACE_FILL);
-	glutAddSubMenu("Material", materialSubMenu);
-	glutAddSubMenu("Shader", shaderSubMenu);
-	glutAttachMenu(GLUT_MIDDLE_BUTTON);
-}
-
 int main(int argc, char* argv[])
 {
 	glutInit(&argc, argv);
@@ -805,7 +778,6 @@ int main(int argc, char* argv[])
 	INIT_VAO();
 	INIT_Illuminazione(world.lights, materials, shaders);
 
-	buildOpenGLMenu();
 	INIT_CAMERA_PROJECTION(world.width, world.height);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -825,16 +797,6 @@ int main(int argc, char* argv[])
 	loc_view_pos = glGetUniformLocation(programId, "ViewPos");
 	 
 	lscelta = glGetUniformLocation(programId, "sceltaVs");
-	 
-	/*world.light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
-	world.light_unif.light_color_pointer = glGetUniformLocation(programId, "light.color");
-	world.light_unif.light_power_pointer = glGetUniformLocation(programId, "light.power");
-	world.light_unif.material_ambient = glGetUniformLocation(programId, "material.ambient");
-	world.light_unif.material_diffuse = glGetUniformLocation(programId, "material.diffuse");
-	world.light_unif.material_specular = glGetUniformLocation(programId, "material.specular");
-	world.light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");*/
-
-
 
 	/* location delle lights */
 	for (int i = 0; i < LIGHTS_NUM; i++) {
@@ -844,8 +806,8 @@ int main(int argc, char* argv[])
 		world.lights_unif[i].color = glGetUniformLocation(programId, colorStr.c_str());
 		string lightStr = "lights[" + to_string(i) + "].power";
 		world.lights_unif[i].power = glGetUniformLocation(programId, lightStr.c_str());
-		cout << positionStr << endl;
 	}
+
 	world.material_unif.ambient = glGetUniformLocation(programId, "material.ambient");
 	world.material_unif.diffuse = glGetUniformLocation(programId, "material.diffuse");
 	world.material_unif.specular = glGetUniformLocation(programId, "material.specular");

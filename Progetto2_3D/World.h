@@ -37,12 +37,11 @@ public:
 	void build_cespugli(GLuint matModel);
 	void upload_cespugli();
 	void insert_cespugli_in_scena();
-	void set_position_cespugli(float x, float y, float z);
+
+	void set_Init_Position_Cespugli();
 
 
-	void create_nuvole(GLuint matModel);
-	void create_cespugli(GLuint matModel);
-	void setInitPositionCespugli();
+
 private:
 	void set_init_position(GLuint matModel);
 
@@ -107,7 +106,7 @@ void World::insert_in_scena() {
 	Scena.push_back(&this->piano);
 }
 
-void World::setInitPositionCespugli() {
+void World::set_Init_Position_Cespugli() {
 	list <Agglomerato>::iterator it;
 	vector<vec3> positions = {
 		vec3(road.position.x + 3.0f * road.width, 0.0f, road.position.z + 2.0f * road.width),
@@ -124,14 +123,6 @@ void World::setInitPositionCespugli() {
 		it->set_position(positions[i].x, positions[i].y, positions[i].z);
 		i++;
 	}
-}
-
-void World::create_nuvole(GLuint matModel) {
-
-}
-
-void World::create_cespugli(GLuint matModel) {
-	//cespuglio.insert_in_scena();
 }
 
 void World::build_cespugli(GLuint matModel) {
@@ -157,13 +148,6 @@ void World::insert_cespugli_in_scena() {
 	}
 }
 
-void World::set_position_cespugli(float x, float y, float z) {
-	int step = 10;
-	list <Agglomerato>::iterator it;
-	for (it = this->cespugli.begin(); it != this->cespugli.end(); ++it) {
-		it->set_position(x + step, y, z - step);
-		step += 50;
-	}
-}
+
 
 #endif

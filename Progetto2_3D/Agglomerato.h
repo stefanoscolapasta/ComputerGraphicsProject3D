@@ -14,7 +14,7 @@
 #define N_LEAF 11;
 
 static float posX[11] = { -2.5f, -2.f, -1.5f, -1.0f, -.5f, 0.0f, .5f, 1.0f, 1.5f, 2.0f, 2.5f };
-static float posY[11] = { 0.0f, 4.0f, 3.0f, 3.5f, 4.0f, 0.0f, 4.0f, 3.5f, 3.0f, 4.0f, 0.0f };
+static float posY[11] = { 0.0f, 3.0f, 2.0f, 2.5f, 3.0f, 0.0f, 3.0f, 2.5f, 2.0f, 3.0f, 0.0f };
 
 
 class Agglomerato {
@@ -73,7 +73,7 @@ void Agglomerato::build_cespuglio(GLuint matModel) {
 	}
 
 	this->set_init_position(matModel);
-	this->set_sceltaVS(3);
+	this->set_sceltaVS(1);
 }
 
 void Agglomerato::build_nuvola(GLuint matModel) {
