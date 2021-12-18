@@ -3,14 +3,72 @@
 #include "Lib.h"
 #include "Strutture.h"
 
-
-
 #ifndef CAMERA_H
 #define CAMERA_H
 
 float cameraSpeed = 0.05;
 
+typedef struct {
+	float deltaXOffset;
+	float offsetXMassimo;
+	vec3 startingCameraPos;
+	vec3 oldPosition;
+	float distanceMultiplierToTarget;
+	float deltaYOffset;
+	float switchSideViewingSelector;
+}CameraMovementHandler;
 
+CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position, vec3(0.0f,0.0f,0.0f),100.0f,10.0f,1 };
+
+vec3 calculateObjectVerticesBarycenter(Mesh* obj) {
+	float sumX = 0.0f;
+	float sumY = 0.0f;
+	float sumZ = 0.0f;
+
+	for (int i = 0; i < obj->vertici.size(); i++) {
+		sumX += obj->vertici[i].x;
+		sumY += obj->vertici[i].y;
+		sumZ += obj->vertici[i].z;
+	}
+
+	int numberOfVertices = obj->vertici.size();
+
+	return vec3(sumX / ((float)numberOfVertices), sumY / ((float)numberOfVertices), sumZ / ((float)numberOfVertices));
+
+}
+
+bool checkIfCameraReachedFixedBoundary() {
+	return ViewSetup.position.x > cameraMovementHandler.startingCameraPos.x + cameraMovementHandler.offsetXMassimo ||
+		ViewSetup.position.x < cameraMovementHandler.startingCameraPos.x - cameraMovementHandler.offsetXMassimo;
+}
+
+void cameraMovementUpdateHandler(Mesh* target) {
+	if (checkIfCameraReachedFixedBoundary()) {
+		cameraMovementHandler.deltaXOffset = -cameraMovementHandler.deltaXOffset;
+	}
+	ViewSetup.position.x += cameraMovementHandler.deltaXOffset;
+}
+
+
+void makeCameraTrackObject(Mesh* objToFollow) {
+	ViewSetup.target = vec4(calculateObjectVerticesBarycenter(objToFollow), 0.0f);
+}
+
+void makeCameraTrackObject(vec3 position) {
+	ViewSetup.target = vec4(position, 0.0f);
+}
+
+void makeCameraPointDirection(vec3 direction) {
+	ViewSetup.direction = vec4(direction, 0.0f);
+}
+
+void makeCameraFollowObject(vec3 position, vec3 offsetToPos) {
+	ViewSetup.position = vec4(position + offsetToPos, 0.0f);
+}
+
+void makeCameraFollowObject(Mesh* objToFollow, vec3 offsetToPos) {
+	ViewSetup.position = vec4(calculateObjectVerticesBarycenter(objToFollow) + offsetToPos, 0.0f);
+}
 
 void moveCameraForward()
 {
@@ -24,6 +82,20 @@ void moveCameraBack()
 	ViewSetup.direction = ViewSetup.target - ViewSetup.position;
 	ViewSetup.position -= ViewSetup.direction * cameraSpeed;
 
+}
+
+void walkCameraForward() {
+	//ViewSetup.direction = ViewSetup.target - ViewSetup.position;
+	vec4 dir = ViewSetup.direction;
+	dir.y = 0;
+	ViewSetup.position += dir * cameraSpeed;
+}
+
+void walkCameraBack() {
+	//ViewSetup.direction = ViewSetup.target - ViewSetup.position;
+	vec4 dir = ViewSetup.direction;
+	dir.y = 0;
+	ViewSetup.position -= dir * cameraSpeed;
 }
 
 void moveCameraLeft()
@@ -46,6 +118,31 @@ void moveCameraRight()
 	ViewSetup.target += vec4(direzione_scorrimento, 0);
 }
 
+void SpecialInput(int key, int x, int y)
+{
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		//walkCameraForward();
+		//position -= velocity;
+		break;
+	case GLUT_KEY_DOWN:
+		//walkCameraBack();
+		//position += velocity;
+		break;
+	case GLUT_KEY_LEFT:
+		//position.x -= 0.1;
+		//rotationAngle += 0.1;
+		//velocity = vec3(vec4(velocity, 0) * rotate(mat4(1), -0.1f, vec3(0, 1, 0)));
+		break;
+	case GLUT_KEY_RIGHT:
+		//position.x += 0.1;
+		//rotationAngle -= 0.1;
+		//velocity = vec3(vec4(velocity, 0) * rotate(mat4(1), 0.1f, vec3(0, 1, 0)));
+		break;
+	}
+	glutPostRedisplay();
+}
 
 void moveCamera(unsigned char key) {
 	switch (key) {
@@ -60,7 +157,7 @@ void moveCamera(unsigned char key) {
 void INIT_CAMERA_PROJECTION(float width, float height) {
 	//Imposto la telecamera
 	ViewSetup = {};
-	ViewSetup.position = glm::vec4(0.0, 0.5, 25.0, 0.0);
+	ViewSetup.position = glm::vec4(0.0, 0.5, 80.0, 0.0);
 	ViewSetup.target = glm::vec4(0.0, 0.0, 0.0, 0.0);
 	ViewSetup.direction = ViewSetup.target - ViewSetup.position;
 	ViewSetup.upVector = glm::vec4(0.0, 1.0, 0.0, 0.0);
@@ -68,7 +165,7 @@ void INIT_CAMERA_PROJECTION(float width, float height) {
 	//Imposto la proiezione prospettica
 	PerspectiveSetup = {};
 	PerspectiveSetup.aspect = (GLfloat)width / (GLfloat)height;
-	PerspectiveSetup.fovY = 45.0f;
+	PerspectiveSetup.fovY = 60.0f;
 	PerspectiveSetup.far_plane = 2000.0f;
 	PerspectiveSetup.near_plane = 0.1f;
 }

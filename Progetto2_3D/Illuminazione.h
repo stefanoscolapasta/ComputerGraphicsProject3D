@@ -8,10 +8,16 @@
 #ifndef ILLUMINAZIONE_H
 #define ILLUMINAZIONE_H
 
-void INIT_Illuminazione(point_light* light, vector<Material>& materials, vector<Shader>& shaders) {
-	light->position = { 0.0,5.0,0.0 };
-	light->color = { 1.0,1.0,1.0 };
-	light->power = 1.f;
+void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vector<Shader>& shaders) {
+	/* luce sole */
+	lights[0].position = { 0.0,5.0,0.0 };
+	lights[0].color = { 1.0, 1.0, 0 };
+	lights[0].power = 1.f;
+
+	/* luce lampione */
+	lights[1].position = { 0.0,5.0,0.0 };
+	lights[1].color = { 1.0,1.0,1.0 };
+	lights[1].power = 0.5f;
 
 	materials.resize(6);
 

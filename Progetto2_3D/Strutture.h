@@ -6,9 +6,6 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 
-
-
-
 //Strutture luci e materiali
 
 typedef enum {
@@ -42,7 +39,6 @@ typedef struct {
 } Shader;
 
 
-
 typedef struct {
 	glm::vec3 position;
 	glm::vec3 color;
@@ -58,6 +54,23 @@ typedef struct {
 	GLuint material_specular;
 	GLuint material_shininess;
 } LightShaderUniform;
+
+// ***********************
+
+typedef struct {
+	GLuint position;
+	GLuint color;
+	GLuint power;
+} LightUniform;
+
+typedef struct {
+	GLuint diffuse;
+	GLuint ambient;
+	GLuint specular;
+	GLuint shininess;
+} MaterialUniform;
+
+//************
 
 typedef enum {
 	GOURAUD,
@@ -78,6 +91,7 @@ typedef struct {
 	mat4 Model;
 	int sceltaVS;
 	int sceltaFS;
+	float initialScaleMultiplier;
 	ShadingType shading;
 	MaterialType material;
 	GLuint VAO;
@@ -92,7 +106,6 @@ typedef struct {
 	float scalex, scaley, scalez;
 	float angle;
 	float rx, ry, rz;
-
 } Mesh;
 
 static vector<Mesh*> Scena;
@@ -118,6 +131,17 @@ struct Character {
 	unsigned int Advance;   // Horizontal offset to advance to next glyph
 };
 
+typedef struct {
+	vec3 position;
+	int direction;
+	float velocity;
+	float rotation;
+} Car;
+
+typedef struct {
+	float width;
+	vec3 position;
+} Road;
 
 #endif // !STRUTTURE_H
 
