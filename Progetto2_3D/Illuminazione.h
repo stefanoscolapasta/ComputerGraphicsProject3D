@@ -8,18 +8,31 @@
 #ifndef ILLUMINAZIONE_H
 #define ILLUMINAZIONE_H
 
+extern Road road;
+
+vector<vec3> lampioniAndLightsPosition = { 
+	vec3(road.position.x + 5.0f * road.width, 0.0f, road.width + road.position.z),
+	vec3(road.position.x + 9.0f * road.width, 0.0f, 2.0f*road.width + road.position.z),
+	vec3(road.position.x + 4.0f * road.width, 0.0f, 4.0f*road.width + road.position.z),
+	vec3(road.position.x + 8.0f * road.width, 0.0f, 6.0f*road.width + road.position.z)
+};
+
 void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vector<Shader>& shaders) {
 	/* luce sole */
 	lights[0].position = { 0.0,5.0,0.0 };
 	lights[0].color = { 1.0, 1.0, 0 };
-	lights[0].power = 1.f;
+	lights[0].power = 1.5f;
 
-	/* luce lampione */
-	lights[1].position = { 0.0,5.0,0.0 };
-	lights[1].color = { 1.0,1.0,1.0 };
-	lights[1].power = 0.5f;
+	for (int i = 1; i < lampioniAndLightsPosition.size(); i++) {
+		/* luce lampione */
+		lights[i].position = lampioniAndLightsPosition[i] + vec3(0,7.5,0);
+		lights[i].color = { 1.0,1.0,1.0 };
+		lights[i].power = .7f;
+	}
 
-	materials.resize(6);
+
+
+	materials.resize(8);
 
 	materials[MaterialType::RED_PLASTIC].name = "Red Plastic";
 	materials[MaterialType::RED_PLASTIC].ambient = red_plastic_ambient;
@@ -56,6 +69,21 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 	materials[MaterialType::NO_MATERIAL].diffuse = glm::vec3(0, 0, 0);
 	materials[MaterialType::NO_MATERIAL].specular = glm::vec3(0, 0, 0);
 	materials[MaterialType::NO_MATERIAL].shininess = 1.f;
+
+	// 0.02	0.02	0.02	0.01	0.01	0.01	0.4	0.4	0.4	.078125
+	materials[MaterialType::BLACK_RUBBER].name = "BLACK_RUBBER";
+	materials[MaterialType::BLACK_RUBBER].ambient = glm::vec3(0.02, 0.02, 0.02);
+	materials[MaterialType::BLACK_RUBBER].diffuse = glm::vec3(0.02, 0.01, 0.01);
+	materials[MaterialType::BLACK_RUBBER].specular = glm::vec3(0.4, 0.4, 0.4);
+	materials[MaterialType::BLACK_RUBBER].shininess = .078125f;	
+	
+	// NUVOLA
+	materials[MaterialType::NUVOLA].name = "NUVOLA";
+	materials[MaterialType::NUVOLA].ambient = nuvola_ambient;
+	materials[MaterialType::NUVOLA].diffuse = nuvola_diffuse;
+	materials[MaterialType::NUVOLA].specular = nuvola_specular;
+	materials[MaterialType::NUVOLA].shininess = nuvola_shininess;
+
 
 	//Setup degli shader
 	shaders.resize(5);

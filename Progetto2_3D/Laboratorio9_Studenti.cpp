@@ -45,6 +45,9 @@ int selected_obj = -1;
 
 Mesh Cubo, Tetto, Cofano, Ruota, Piano, Piramide, Centri, Sfera, Sole, Sfondo;
 Mesh Palo, Lampione;
+
+
+
 Mesh cerchio, quadrato;
 
 vector<Material> materials;
@@ -146,14 +149,26 @@ vec3 calculateDirectionVecFromInt(int dir) {
 	}
 }
 
-
+float x = 0.05, y = 0.05f, z = 0.01;
+int i = 0;
 
 void update(int a) {
+	world.translate_nuvole(x, y, z);
+	i++;
 
-	/* Positione del sole */
-	world.light.position = calculateObjectVerticesBarycenter(&Sole);
+	if (i % 100) {
+		y = -y;
+	}
+
+	if (i == 500) {
+		i = 0;
+		x = -x;
+		z = -z;
+	}
+
 	world.lights[0].position = calculateObjectVerticesBarycenter(&Sole);
-	world.lights[1].position = calculateObjectVerticesBarycenter(&Lampione);
+	/* Positione del sole */
+
 
 	/* Movement */
 	int slot = roadMatrix[row][column];
@@ -238,12 +253,15 @@ void update(int a) {
 
 	vec3 directVect = car.position - cameraMovementHandler.oldPosition;
 	
+
+
 	modifyModelMatrixToPos(&Sole, positionVector, vec3(1.0f,0.0f,0.0f), 0.0f, 1.0f);
-	makeCameraTrackObject(car.position);
-	//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
-	vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
-	makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
-	
+	if (!cameraMovementHandler.detach) {
+		makeCameraTrackObject(car.position);
+		//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
+		vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
+		makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
+	}
 	cameraMovementHandler.oldPosition = car.position;
 
 	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
@@ -279,8 +297,12 @@ void INIT_VAO(void)
 	world.build_cespugli(MatModel);
 	world.upload_cespugli();
 	world.insert_cespugli_in_scena();
+	world.set_init_position_cespugli();
 
-	world.set_position_cespugli(-100, 0, 300);
+	world.build_nuvole(MatModel);
+	world.upload_nuvole();
+	world.insert_nuvole_in_scena();
+	world.set_init_position_nuvole();
 
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 	crea_curva(&cerchio, road.width);
@@ -296,10 +318,12 @@ void INIT_VAO(void)
 	crea_cilindro(&Ruota, vec4(0, 0, 0, 1));
 	crea_VAO_Vector(&Ruota);
 	/*LAMPIONe*/
-	crea_cilindro(&Palo, vec4(0,0,0,1));
+
+	crea_cilindro(&Palo, vec4(0, 0, 0, 1));
 	crea_VAO_Vector(&Palo);
-	crea_sfera(&Lampione, vec4(1,1,1,1));
+	crea_sfera(&Lampione, vec4(1, 1, 1, 1));
 	crea_VAO_Vector(&Lampione);
+
 
 	//SOLE
 	crea_sfera(&Sole, vec4(1.0, 1.0, 0.0, 1.0));
@@ -316,16 +340,6 @@ void INIT_VAO(void)
 	Sole.material = MaterialType::RED_PLASTIC;
 	Scena.push_back(&Sole);
 }
-
-
-// 	if (selected_obj > -1)
-// 	{
-// 		Scena[selected_obj]->Model = Scena[selected_obj]->Model * scale * rotation * traslation;
-// 		centri[selected_obj] = centri[selected_obj] + translation_vector;
-// 		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
-// 	}
-// }
-
 
 void keyboardPressedEvent(unsigned char key, int x, int y) {
 
@@ -366,7 +380,8 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	case 'v':
 		cameraMovementHandler.switchSideViewingSelector = -cameraMovementHandler.switchSideViewingSelector;
 		break;
-
+	case 't':
+		cameraMovementHandler.detach = !cameraMovementHandler.detach;
 	default:
 		break;
 	}
@@ -388,22 +403,6 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	if (key == '-')
 		amount *= -1;
 
-	switch (OperationMode) {
-		//la funzione modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor) 
-		// definisce la matrice di modellazione che si vuole postmoltiplicare alla matrice di modellazione dell'oggetto selezionato, per poterlo traslare, ruotare scalare.
-	case TRASLATING:
-		// si passa angle 0 e scale factor =1, 
-		//modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
-		break;
-	case ROTATING:
-		// SI mette a zero il vettore di traslazione (vec3(0) e ad 1 il fattore di scale
-		//modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
-		break;
-	case SCALING:
-		// SI mette a zero il vettore di traslazione (vec3(0), angolo di rotazione a 0 e ad 1 il fattore di scala 1+amount.
-		//modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
-		break;
-	}
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
@@ -643,13 +642,13 @@ void drawScene(void)
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cofano.Model));
 	glDrawElements(GL_TRIANGLES, (Cofano.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
+	setMaterialUniform(MaterialType::BLACK_RUBBER);
 	Ruota.Model = mat4(1);
 	Ruota.Model = translate(Ruota.Model, car.position);
 	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
 	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, -3));
 	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
 	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
-	setMaterialUniform(MaterialType::SLATE);
 	glBindVertexArray(Ruota.VAO);
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
 	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
@@ -720,50 +719,26 @@ void drawScene(void)
 			}
 		}
 	}
-	/* Lampione */
-	glUniform1i(lscelta, 0);
-	Palo.Model = mat4(1);
-	Palo.Model = translate(Palo.Model, vec3(0, 0, 0));
-	Palo.Model = scale(Palo.Model, vec3(0.2, 7, 0.2));
-	glBindVertexArray(Palo.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Palo.Model));
-	glDrawElements(GL_TRIANGLES, (Palo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	for (int i = 0; i < lampioniAndLightsPosition.size(); i++) {
+		/* Lampione */
+		glUniform1i(lscelta, 0);
+		Palo.Model = mat4(1);
+		Palo.Model = translate(Palo.Model, lampioniAndLightsPosition[i]);
+		Palo.Model = scale(Palo.Model, vec3(0.2, 7, 0.2));
+		glBindVertexArray(Palo.VAO);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Palo.Model));
+		glDrawElements(GL_TRIANGLES, (Palo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	Lampione.Model = mat4(1);
-	Lampione.Model = translate(Lampione.Model, vec3(0, 7.5, 0));
-	Lampione.Model = scale(Lampione.Model, vec3(1, 1, 1));
-	glBindVertexArray(Lampione.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Lampione.Model));
-	glDrawElements(GL_TRIANGLES, (Lampione.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+		Lampione.Model = mat4(1);
+		Lampione.Model = translate(Lampione.Model, lampioniAndLightsPosition[i]+vec3(0,7.5f,0));
+		Lampione.Model = scale(Lampione.Model, vec3(1, 1, 1));
+		glBindVertexArray(Lampione.VAO);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Lampione.Model));
+		glDrawElements(GL_TRIANGLES, (Lampione.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	}
+
 
 	glutSwapBuffers();
-}
-
-void buildOpenGLMenu()
-{ 
-	int materialSubMenu = glutCreateMenu(material_menu_function);
-
-    glutAddMenuEntry(materials[MaterialType::EMERALD].name.c_str(), MaterialType::EMERALD);
-	glutAddMenuEntry(materials[MaterialType::BRASS].name.c_str(), MaterialType::BRASS);
-	glutAddMenuEntry(materials[MaterialType::SLATE].name.c_str(), MaterialType::SLATE);
-	glutAddMenuEntry(materials[MaterialType::YELLOW].name.c_str(), MaterialType::YELLOW);
-	
-	int shaderSubMenu = glutCreateMenu(shader_menu_function);
-	glutAddMenuEntry(shaders[ShaderOption::NONE].name.c_str(), ShaderOption::NONE);
-	glutAddMenuEntry(shaders[ShaderOption::GOURAD_SHADING].name.c_str(), ShaderOption::GOURAD_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::PHONG_SHADING].name.c_str(), ShaderOption::PHONG_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::ONDE_SHADING].name.c_str(), ShaderOption::ONDE_SHADING);
-	glutAddMenuEntry(shaders[ShaderOption::BANDIERA_SHADING].name.c_str(), ShaderOption::BANDIERA_SHADING);
-	
-	 
-	glutCreateMenu(main_menu_func); // richiama main_menu_func() alla selezione di una voce menu
-	glutAddMenuEntry("Opzioni", -1); //-1 significa che non si vuole gestire questa riga
-	glutAddMenuEntry("", -1);
-	glutAddMenuEntry("Wireframe", MenuOption::WIRE_FRAME);
-	glutAddMenuEntry("Face fill", MenuOption::FACE_FILL);
-	glutAddSubMenu("Material", materialSubMenu);
-	glutAddSubMenu("Shader", shaderSubMenu);
-	glutAttachMenu(GLUT_MIDDLE_BUTTON);
 }
 
 int main(int argc, char* argv[])
@@ -794,7 +769,6 @@ int main(int argc, char* argv[])
 	INIT_VAO();
 	INIT_Illuminazione(world.lights, materials, shaders);
 
-	buildOpenGLMenu();
 	INIT_CAMERA_PROJECTION(world.width, world.height);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -814,16 +788,6 @@ int main(int argc, char* argv[])
 	loc_view_pos = glGetUniformLocation(programId, "ViewPos");
 	 
 	lscelta = glGetUniformLocation(programId, "sceltaVs");
-	 
-	/*world.light_unif.light_position_pointer = glGetUniformLocation(programId, "light.position");
-	world.light_unif.light_color_pointer = glGetUniformLocation(programId, "light.color");
-	world.light_unif.light_power_pointer = glGetUniformLocation(programId, "light.power");
-	world.light_unif.material_ambient = glGetUniformLocation(programId, "material.ambient");
-	world.light_unif.material_diffuse = glGetUniformLocation(programId, "material.diffuse");
-	world.light_unif.material_specular = glGetUniformLocation(programId, "material.specular");
-	world.light_unif.material_shininess = glGetUniformLocation(programId, "material.shininess");*/
-
-
 
 	/* location delle lights */
 	for (int i = 0; i < LIGHTS_NUM; i++) {
@@ -833,8 +797,8 @@ int main(int argc, char* argv[])
 		world.lights_unif[i].color = glGetUniformLocation(programId, colorStr.c_str());
 		string lightStr = "lights[" + to_string(i) + "].power";
 		world.lights_unif[i].power = glGetUniformLocation(programId, lightStr.c_str());
-		cout << positionStr << endl;
 	}
+
 	world.material_unif.ambient = glGetUniformLocation(programId, "material.ambient");
 	world.material_unif.diffuse = glGetUniformLocation(programId, "material.diffuse");
 	world.material_unif.specular = glGetUniformLocation(programId, "material.specular");
