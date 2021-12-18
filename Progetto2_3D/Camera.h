@@ -16,9 +16,10 @@ typedef struct {
 	float distanceMultiplierToTarget;
 	float deltaYOffset;
 	float switchSideViewingSelector;
+	bool detach;
 }CameraMovementHandler;
 
-CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position, vec3(0.0f,0.0f,0.0f),100.0f,10.0f,1 };
+CameraMovementHandler cameraMovementHandler = { 0.2f, 20.0f, ViewSetup.position, vec3(0.0f,0.0f,0.0f),100.0f,10.0f,1,false };
 
 vec3 calculateObjectVerticesBarycenter(Mesh* obj) {
 	float sumX = 0.0f;

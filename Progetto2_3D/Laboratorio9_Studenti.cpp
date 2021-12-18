@@ -241,12 +241,15 @@ void update(int a) {
 
 	vec3 directVect = car.position - cameraMovementHandler.oldPosition;
 	
+
+
 	modifyModelMatrixToPos(&Sole, positionVector, vec3(1.0f,0.0f,0.0f), 0.0f, 1.0f);
-	makeCameraTrackObject(car.position);
-	//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
-	vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
-	makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
-	
+	if (!cameraMovementHandler.detach) {
+		makeCameraTrackObject(car.position);
+		//makeCameraPointDirection(calculateDirectionVecFromInt(car.direction));
+		vec3 positionToFollow = car.position + (cameraMovementHandler.switchSideViewingSelector) * (directVect * cameraMovementHandler.distanceMultiplierToTarget);
+		makeCameraFollowObject(positionToFollow, vec3(0.0f, cameraMovementHandler.deltaYOffset, 0.0f));
+	}
 	cameraMovementHandler.oldPosition = car.position;
 
 	//modifyModelMatrixToPos(&Casa, vec3(ViewSetup.target.x, ViewSetup.target.y, ViewSetup.target.z));
@@ -370,7 +373,8 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	case 'v':
 		cameraMovementHandler.switchSideViewingSelector = -cameraMovementHandler.switchSideViewingSelector;
 		break;
-
+	case 't':
+		cameraMovementHandler.detach = !cameraMovementHandler.detach;
 	default:
 		break;
 	}
