@@ -643,13 +643,13 @@ void drawScene(void)
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Cofano.Model));
 	glDrawElements(GL_TRIANGLES, (Cofano.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
+	setMaterialUniform(MaterialType::BLACK_RUBBER);
 	Ruota.Model = mat4(1);
 	Ruota.Model = translate(Ruota.Model, car.position);
 	Ruota.Model = rotate(Ruota.Model, -car.rotation, vec3(0, 1, 0));
 	Ruota.Model = translate(Ruota.Model, vec3(-1, 0.5, -3));
 	Ruota.Model = rotate(Ruota.Model, radians(90.0f), vec3(0, 0, 1));
 	Ruota.Model = scale(Ruota.Model, vec3(0.5, 1, 0.5));
-	setMaterialUniform(MaterialType::SLATE);
 	glBindVertexArray(Ruota.VAO);
 	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Ruota.Model));
 	glDrawElements(GL_TRIANGLES, (Ruota.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);

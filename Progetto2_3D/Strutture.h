@@ -14,7 +14,8 @@ typedef enum {
 	BRASS,
 	SLATE,
 	YELLOW,
-	NO_MATERIAL
+	NO_MATERIAL,
+	BLACK_RUBBER
 } MaterialType;
 
 typedef struct {

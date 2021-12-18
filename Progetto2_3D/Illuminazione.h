@@ -19,7 +19,7 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 	lights[1].color = { 1.0,1.0,1.0 };
 	lights[1].power = 0.5f;
 
-	materials.resize(6);
+	materials.resize(7);
 
 	materials[MaterialType::RED_PLASTIC].name = "Red Plastic";
 	materials[MaterialType::RED_PLASTIC].ambient = red_plastic_ambient;
@@ -56,6 +56,13 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 	materials[MaterialType::NO_MATERIAL].diffuse = glm::vec3(0, 0, 0);
 	materials[MaterialType::NO_MATERIAL].specular = glm::vec3(0, 0, 0);
 	materials[MaterialType::NO_MATERIAL].shininess = 1.f;
+
+	// 0.02	0.02	0.02	0.01	0.01	0.01	0.4	0.4	0.4	.078125
+	materials[MaterialType::BLACK_RUBBER].name = "BLACK_RUBBER";
+	materials[MaterialType::BLACK_RUBBER].ambient = glm::vec3(0.02, 0.02, 0.02);
+	materials[MaterialType::BLACK_RUBBER].diffuse = glm::vec3(0.02, 0.01, 0.01);
+	materials[MaterialType::BLACK_RUBBER].specular = glm::vec3(0.4, 0.4, 0.4);
+	materials[MaterialType::BLACK_RUBBER].shininess = .078125f;
 
 	//Setup degli shader
 	shaders.resize(5);

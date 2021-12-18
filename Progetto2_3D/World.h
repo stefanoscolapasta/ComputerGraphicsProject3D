@@ -125,6 +125,7 @@ void World::build_cespugli(GLuint matModel) {
 	for (int i = 0; i < 5; i++) {
 		Agglomerato cespuglio = {};
 		cespuglio.build_cespuglio(matModel);
+		cespuglio.set_sceltaVS(1);
 		this->cespugli.push_back(cespuglio);
 	}
 }
