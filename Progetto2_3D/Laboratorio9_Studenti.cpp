@@ -282,8 +282,7 @@ void INIT_VAO(void)
 	world.build_cespugli(MatModel);
 	world.upload_cespugli();
 	world.insert_cespugli_in_scena();
-
-	world.set_position_cespugli(-100, 0, 300);
+	world.setInitPositionCespugli();
 
 	//COSTRUZIONE AMBIENTE: STRUTTURA Scena
 	crea_curva(&cerchio, road.width);

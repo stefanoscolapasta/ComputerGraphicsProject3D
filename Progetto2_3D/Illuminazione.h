@@ -27,7 +27,7 @@ void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vecto
 		/* luce lampione */
 		lights[i].position = lampioniAndLightsPosition[i] + vec3(0,7.5,0);
 		lights[i].color = { 1.0,1.0,1.0 };
-		lights[i].power = .4f;
+		lights[i].power = .7f;
 	}
 
 

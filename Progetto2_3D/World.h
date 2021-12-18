@@ -12,10 +12,6 @@ static unsigned int MatrixProj, MatrixProj_txt, MatModel, MatView, loc_time, lsh
 class World {
 
 public:
-	LightShaderUniform light_unif;
-	point_light light;
-
-
 	LightUniform lights_unif[LIGHTS_NUM];
 	point_light lights[LIGHTS_NUM];
 	MaterialUniform material_unif;
@@ -46,7 +42,7 @@ public:
 
 	void create_nuvole(GLuint matModel);
 	void create_cespugli(GLuint matModel);
-
+	void setInitPositionCespugli();
 private:
 	void set_init_position(GLuint matModel);
 
@@ -54,8 +50,6 @@ private:
 
 
 World::World() {
-	this->light_unif = {};
-	this->light = {};
 
 	for (int i = 0; i < LIGHTS_NUM; i++) {
 		this->lights[i] = {};
@@ -113,6 +107,25 @@ void World::insert_in_scena() {
 	Scena.push_back(&this->piano);
 }
 
+void World::setInitPositionCespugli() {
+	list <Agglomerato>::iterator it;
+	vector<vec3> positions = {
+		vec3(road.position.x + 3.0f * road.width, 0.0f, road.position.z + 2.0f * road.width),
+		vec3(road.position.x + 5.0f * road.width, 0.0f, road.position.z + 7.0f * road.width), 
+		vec3(road.position.x + 0.0f * road.width, 0.0f, road.position.z + 2.0f * road.width),
+		vec3(road.position.x + 6.0f * road.width, 0.0f, road.position.z + 5.0f * road.width), 
+		vec3(road.position.x + 0.0f * road.width, 0.0f, road.position.z + 5.0f * road.width), 
+		vec3(road.position.x + 10.0f * road.width, 0.0f, road.position.z + 6.0f * road.width), 
+		vec3(road.position.x + 8.0f * road.width, 0.0f, road.position.z + 1.0f * road.width), 
+		vec3(road.position.x + 4.0f * road.width, 0.0f, road.position.z + 6.0f * road.width)
+	};
+	int i = 0;
+	for (it = this->cespugli.begin(); it != this->cespugli.end(); ++it) {
+		it->set_position(positions[i].x, positions[i].y, positions[i].z);
+		i++;
+	}
+}
+
 void World::create_nuvole(GLuint matModel) {
 
 }
@@ -122,7 +135,7 @@ void World::create_cespugli(GLuint matModel) {
 }
 
 void World::build_cespugli(GLuint matModel) {
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 8; i++) {
 		Agglomerato cespuglio = {};
 		cespuglio.build_cespuglio(matModel);
 		cespuglio.set_sceltaVS(1);

@@ -13,7 +13,7 @@
 
 #define N_LEAF 11;
 
-static float posX[11] = { -5.0f, -4.0f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
+static float posX[11] = { -2.5f, -2.f, -1.5f, -1.0f, -.5f, 0.0f, .5f, 1.0f, 1.5f, 2.0f, 2.5f };
 static float posY[11] = { 0.0f, 4.0f, 3.0f, 3.5f, 4.0f, 0.0f, 4.0f, 3.5f, 3.0f, 4.0f, 0.0f };
 
 
@@ -55,7 +55,7 @@ void Agglomerato::set_init_position(GLuint matModel) {
 	list <Mesh>::iterator it;
 	for (it = this->body.begin(); it != this->body.end(); ++it) {
 		set_transform_values(&(*it), posX[index], posY[index], 0.0f,
-			4.0f, 4.0f, 4.0f,
+			2.0f, 2.0f, 2.0f,
 			0.0f, 0.0f, 1.0f, 0.0f);
 		modify(&(*it), matModel);
 		index += 1;
@@ -67,7 +67,7 @@ void Agglomerato::build_cespuglio(GLuint matModel) {
 		Mesh foglia = {};
 		crea_sfera(&foglia, vec_RGBA(63, 195, 128));
 		foglia.nome = "foglia";
-		foglia.sceltaVS = 1;
+		foglia.sceltaVS = 3;
 		foglia.material = MaterialType::EMERALD;
 		this->body.push_back(foglia);
 	}
