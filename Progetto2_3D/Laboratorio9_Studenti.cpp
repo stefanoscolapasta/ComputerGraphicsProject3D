@@ -569,7 +569,7 @@ void setMaterialUniform(MaterialType material) {
 
 void drawScene(void)
 {
-
+	float sunHeightFactor = glm::max(0.0f, calculateObjectVerticesBarycenter(&Sole).y) / 400;
 	/*
 	float timeValue = glutGet(GLUT_ELAPSED_TIME) * 0.001;
 	ViewSetup.position.x = sin(timeValue) * 10.0;
@@ -584,7 +584,7 @@ void drawScene(void)
 	glUseProgram(programId);
 	Projection = perspective(radians(PerspectiveSetup.fovY), PerspectiveSetup.aspect, PerspectiveSetup.near_plane, PerspectiveSetup.far_plane);
 	glUniformMatrix4fv(MatrixProj, 1, GL_FALSE, value_ptr(Projection));
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearColor(f_RGB(0), f_RGB(89) * sunHeightFactor, f_RGB(255) * sunHeightFactor, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Costruisco la matrice di Vista che applicata ai vertici in coordinate del mondo li trasforma nel sistema di riferimento della camera.
