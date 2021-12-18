@@ -45,6 +45,9 @@ int selected_obj = -1;
 
 Mesh Cubo, Tetto, Cofano, Ruota, Piano, Piramide, Centri, Sfera, Sole, Sfondo;
 Mesh Palo, Lampione;
+
+
+
 Mesh cerchio, quadrato;
 
 vector<Material> materials;
@@ -150,10 +153,10 @@ vec3 calculateDirectionVecFromInt(int dir) {
 
 void update(int a) {
 
-	/* Positione del sole */
-	world.light.position = calculateObjectVerticesBarycenter(&Sole);
+
 	world.lights[0].position = calculateObjectVerticesBarycenter(&Sole);
-	world.lights[1].position = calculateObjectVerticesBarycenter(&Lampione);
+	/* Positione del sole */
+
 
 	/* Movement */
 	int slot = roadMatrix[row][column];
@@ -296,10 +299,12 @@ void INIT_VAO(void)
 	crea_cilindro(&Ruota, vec4(0, 0, 0, 1));
 	crea_VAO_Vector(&Ruota);
 	/*LAMPIONe*/
-	crea_cilindro(&Palo, vec4(0,0,0,1));
+
+	crea_cilindro(&Palo, vec4(0, 0, 0, 1));
 	crea_VAO_Vector(&Palo);
-	crea_sfera(&Lampione, vec4(1,1,1,1));
+	crea_sfera(&Lampione, vec4(1, 1, 1, 1));
 	crea_VAO_Vector(&Lampione);
+
 
 	//SOLE
 	crea_sfera(&Sole, vec4(1.0, 1.0, 0.0, 1.0));
@@ -720,21 +725,24 @@ void drawScene(void)
 			}
 		}
 	}
-	/* Lampione */
-	glUniform1i(lscelta, 0);
-	Palo.Model = mat4(1);
-	Palo.Model = translate(Palo.Model, vec3(0, 0, 0));
-	Palo.Model = scale(Palo.Model, vec3(0.2, 7, 0.2));
-	glBindVertexArray(Palo.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Palo.Model));
-	glDrawElements(GL_TRIANGLES, (Palo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	for (int i = 0; i < lampioniAndLightsPosition.size(); i++) {
+		/* Lampione */
+		glUniform1i(lscelta, 0);
+		Palo.Model = mat4(1);
+		Palo.Model = translate(Palo.Model, lampioniAndLightsPosition[i]);
+		Palo.Model = scale(Palo.Model, vec3(0.2, 7, 0.2));
+		glBindVertexArray(Palo.VAO);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Palo.Model));
+		glDrawElements(GL_TRIANGLES, (Palo.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-	Lampione.Model = mat4(1);
-	Lampione.Model = translate(Lampione.Model, vec3(0, 7.5, 0));
-	Lampione.Model = scale(Lampione.Model, vec3(1, 1, 1));
-	glBindVertexArray(Lampione.VAO);
-	glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Lampione.Model));
-	glDrawElements(GL_TRIANGLES, (Lampione.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+		Lampione.Model = mat4(1);
+		Lampione.Model = translate(Lampione.Model, lampioniAndLightsPosition[i]+vec3(0,7.5f,0));
+		Lampione.Model = scale(Lampione.Model, vec3(1, 1, 1));
+		glBindVertexArray(Lampione.VAO);
+		glUniformMatrix4fv(MatModel, 1, GL_FALSE, value_ptr(Lampione.Model));
+		glDrawElements(GL_TRIANGLES, (Lampione.indici.size() - 1) * sizeof(GLuint), GL_UNSIGNED_INT, 0);
+	}
+
 
 	glutSwapBuffers();
 }

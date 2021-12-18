@@ -8,16 +8,29 @@
 #ifndef ILLUMINAZIONE_H
 #define ILLUMINAZIONE_H
 
+extern Road road;
+
+vector<vec3> lampioniAndLightsPosition = { 
+	vec3(road.position.x + 5.0f * road.width, 0.0f, road.width + road.position.z),
+	vec3(road.position.x + 9.0f * road.width, 0.0f, 2.0f*road.width + road.position.z),
+	vec3(road.position.x + 4.0f * road.width, 0.0f, 4.0f*road.width + road.position.z),
+	vec3(road.position.x + 8.0f * road.width, 0.0f, 6.0f*road.width + road.position.z)
+};
+
 void INIT_Illuminazione(point_light lights[], vector<Material>& materials, vector<Shader>& shaders) {
 	/* luce sole */
 	lights[0].position = { 0.0,5.0,0.0 };
 	lights[0].color = { 1.0, 1.0, 0 };
-	lights[0].power = 1.f;
+	lights[0].power = 1.5f;
 
-	/* luce lampione */
-	lights[1].position = { 0.0,5.0,0.0 };
-	lights[1].color = { 1.0,1.0,1.0 };
-	lights[1].power = 0.5f;
+	for (int i = 1; i < lampioniAndLightsPosition.size(); i++) {
+		/* luce lampione */
+		lights[i].position = lampioniAndLightsPosition[i] + vec3(0,7.5,0);
+		lights[i].color = { 1.0,1.0,1.0 };
+		lights[i].power = .4f;
+	}
+
+
 
 	materials.resize(7);
 

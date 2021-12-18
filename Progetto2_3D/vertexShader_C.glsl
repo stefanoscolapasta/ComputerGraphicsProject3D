@@ -20,7 +20,7 @@ struct PointLight{
  };
  //definizione di una varialie uniform che hala struttura PointLight
 uniform PointLight light;
-uniform PointLight lights[2];
+uniform PointLight lights[4];
 
 //Struttura per la gestione di un materiale
 struct Material {
@@ -50,7 +50,7 @@ void main() {
         vec3 specular = vec3(0);
         //Trasformare le coordinate del vertice da elaborare (aPos) in coordinate di vista
         vec4 eyePosition= View*Model*vec4(aPos,1.0);
-        for(int i = 0; i < 2; i++) {
+        for(int i = 0; i < 4; i++) {
             //Trasformia la posizione della luce nelle coordinate di vista
             vec4 eyeLightPos= View * vec4(lights[i].position, 1.0);
             //trasformare le normali nel vertice in esame nel sistema di coordinate di vista

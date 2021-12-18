@@ -6,7 +6,7 @@
 #ifndef WORLD_H
 #define WORLD_H
 
-#define LIGHTS_NUM 2
+#define LIGHTS_NUM 4
 static unsigned int MatrixProj, MatrixProj_txt, MatModel, MatView, loc_time, lsh, leye, lscelta, loc_view_pos;
 
 class World {
