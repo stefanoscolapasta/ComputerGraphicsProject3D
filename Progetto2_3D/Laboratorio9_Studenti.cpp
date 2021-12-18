@@ -324,16 +324,6 @@ void INIT_VAO(void)
 	Scena.push_back(&Sole);
 }
 
-
-// 	if (selected_obj > -1)
-// 	{
-// 		Scena[selected_obj]->Model = Scena[selected_obj]->Model * scale * rotation * traslation;
-// 		centri[selected_obj] = centri[selected_obj] + translation_vector;
-// 		raggi[selected_obj] = raggi[selected_obj] * scale_factor;
-// 	}
-// }
-
-
 void keyboardPressedEvent(unsigned char key, int x, int y) {
 
 	moveCamera(key);
@@ -396,22 +386,6 @@ void keyboardPressedEvent(unsigned char key, int x, int y) {
 	if (key == '-')
 		amount *= -1;
 
-	switch (OperationMode) {
-		//la funzione modifyModelMatrix(glm::vec3 translation_vector, glm::vec3 rotation_vector, GLfloat angle, GLfloat scale_factor) 
-		// definisce la matrice di modellazione che si vuole postmoltiplicare alla matrice di modellazione dell'oggetto selezionato, per poterlo traslare, ruotare scalare.
-	case TRASLATING:
-		// si passa angle 0 e scale factor =1, 
-		//modifyModelMatrix(asse * amount, asse, 0.0f, 1.0f);
-		break;
-	case ROTATING:
-		// SI mette a zero il vettore di traslazione (vec3(0) e ad 1 il fattore di scale
-		//modifyModelMatrix(glm::vec3(0), asse, amount * 2.0f, 1.0f);
-		break;
-	case SCALING:
-		// SI mette a zero il vettore di traslazione (vec3(0), angolo di rotazione a 0 e ad 1 il fattore di scala 1+amount.
-		//modifyModelMatrix(glm::vec3(0), asse, 0.0f, 1.0f + amount);
-		break;
-	}
 	glutSetWindow(idfg);
 	glutPostRedisplay();
 }
